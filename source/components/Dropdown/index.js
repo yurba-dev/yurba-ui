@@ -10,6 +10,7 @@ export class DropdownComponent extends BaseComponent {
         this._onOpen = properties.onOpen ?? null
         this._onClose = properties.onClose ?? null
         this._align = properties.align ?? 'left'
+        this._triggerClass = properties.triggerClass ?? null
         this.placement = "body"
     }
 
@@ -19,6 +20,7 @@ export class DropdownComponent extends BaseComponent {
 
         const trigger = document.createElement("button")
         trigger.className = "y-dropdown__trigger"
+        if (this._triggerClass) trigger.classList.add(...this._triggerClass.split(" ").filter(Boolean))
         trigger.type = "button"
         trigger.innerHTML = this._triggerContent
 

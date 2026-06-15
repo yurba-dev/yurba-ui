@@ -3,23 +3,6 @@
     display: inline-flex;
 }
 
-.y-dropdown__trigger {
-    all: unset;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--y-win-action-bg);
-    border-radius: 100%;
-    padding: 7px;
-    cursor: pointer;
-    user-select: none;
-    transition: .1s;
-}
-
-.y-dropdown__trigger:hover {
-    background: var(--y-win-action-bg-hover);
-}
-
 .y-dropdown__menu {
     position: absolute;
     top: calc(100% + 4px);
