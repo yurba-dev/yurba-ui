@@ -3,11 +3,9 @@
     "version": "1.0.0",
     "description": "Modal windows, tooltips, toasts, selects and dropdowns for Yurba.",
     "scripts": {
-        "build": "node build.js",
-        "dev": "serve . -p 3000"
+        "build": "node build.js"
     },
     "devDependencies": {
-        "esbuild": "^0.24.0",
-        "serve": "^14.0.0"
+        "esbuild": "^0.24.0"
     }
 }

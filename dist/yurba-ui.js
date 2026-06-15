@@ -725,6 +725,7 @@ var __yurbaui__ = (() => {
       this._triggerContent = properties.trigger;
       this._onOpen = properties.onOpen ?? null;
       this._onClose = properties.onClose ?? null;
+      this._align = properties.align ?? "left";
       this.placement = "body";
     }
     render() {
@@ -826,7 +827,7 @@ var __yurbaui__ = (() => {
       const pad = 8;
       const tRect = trigger.getBoundingClientRect();
       const mRect = menu.getBoundingClientRect();
-      if (tRect.left + mRect.width > window.innerWidth - pad) {
+      if (this._align === "right" || tRect.left + mRect.width > window.innerWidth - pad) {
         menu.style.left = "auto";
         menu.style.right = "0";
       } else {

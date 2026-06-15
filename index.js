@@ -1,5 +1,3 @@
-import { YurbaUI } from '/source/index.js'
-
 const tabBtns = document.querySelectorAll('.tab-btn')
 const tabPanels = document.querySelectorAll('.tab-panel')
 
