@@ -1,0 +1,31 @@
+:root {
+    --y-win-pos-center-translate-y: -50%;
+    --y-win-pos-center-translate-x: -50%;
+    --y-win-pos-offset: 15px;
+}
+
+.y-win__wrapper.y-win__pos-right .y-win {
+    left: unset!important;
+    right: var(--y-win-pos-offset);
+    --y-win-pos-center-translate-y: 0%;
+}
+.y-win__wrapper.y-win__pos-left .y-win {
+    left: var(--y-win-pos-offset)!important;
+    right: unset!important;
+    --y-win-pos-center-translate-y: 0%;
+}
+.y-win__wrapper.y-win__pos-bottom .y-win {
+    bottom: var(--y-win-pos-offset);
+    top: unset!important;
+    --y-win-pos-center-translate-x: 0%;
+}
+.y-win__wrapper.y-win__pos-top .y-win {
+    top: var(--y-win-pos-offset)!important;
+    bottom: unset!important;
+    --y-win-pos-center-translate-x: 0%;
+}
+.y-win__wrapper.y-win__pos-center .y-win {
+    top: 50%;
+    left: 50%;
+    transform: translate(var(--y-win-pos-center-translate-y), var(--y-win-pos-center-translate-x));
+}

@@ -1,0 +1,33 @@
+.y-win__icon-vbutton {
+    padding: 0px;
+    background: transparent;
+    border: 0px;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: .2s;
+}
+.y-win__icon-vbutton:hover {
+    opacity: .5;
+    cursor: pointer;
+}
+.y-win__icon-vbutton.only-icon .y-win__icon-vbutton__icon {
+    height: 30px;
+    width: 30px;
+}
+.y-win__icon-vbutton .y-win__icon-vbutton__icon {
+    background: var(--y-win-action-bg);
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+}
+.y-win__icon-vbutton .y-win__icon-vbutton__icon span[class^="material-symbols"] {
+    font-size: 18px;
+}
+.y-win__icon-vbutton .y-win__icon-vbutton__name {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}

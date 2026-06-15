@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YurbaUI — Documentation</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <link rel="stylesheet" href="/source/components/Modal/sizes.css">
+    <link rel="stylesheet" href="/source/components/Modal/pos.css">
+    <link rel="stylesheet" href="/source/components/Tooltip/index.css">
+    <link rel="stylesheet" href="/source/components/Modal/index.css">
+    <link rel="stylesheet" href="/source/components/Group/index.css">
+    <link rel="stylesheet" href="/source/components/Image/index.css">
+    <link rel="stylesheet" href="/source/components/Description/index.css">
+    <link rel="stylesheet" href="/source/components/Text/index.css">
+    <link rel="stylesheet" href="/source/components/Title/index.css">
+    <link rel="stylesheet" href="/source/components/TitleIcon/index.css">
+    <link rel="stylesheet" href="/source/components/VIconButton/index.css">
+    <link rel="stylesheet" href="/source/components/Select/index.css">
+    <link rel="stylesheet" href="/source/components/Dropdown/index.css">
+
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-inner">
+            <h1>YurbaUI</h1>
+            <div class="divider"></div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="tab-modal">Modal</button>
+                <button class="tab-btn" data-tab="tab-toast">Toast</button>
+                <button class="tab-btn" data-tab="tab-tooltip">Tooltip</button>
+                <button class="tab-btn" data-tab="tab-select">Select</button>
+                <button class="tab-btn" data-tab="tab-dropdown">Dropdown</button>
+                <button class="tab-btn" data-tab="tab-other">Other</button>
+            </nav>
+        </div>
+    </div>
+
+    <main>
+
+        <div class="tab-panel active" id="tab-modal">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Modal</h2>
+                <p class="doc-component-desc">Floating overlay dialog window. Supports multiple sizes, placements, footer actions, header controls, auto-close, and declarative attribute binding.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const modal = new YurbaUI.Modal(options?)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Type</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>size</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td><code>'default'</code></td>
+                                <td>Initial window size. See <code>setSize()</code> for allowed values.</td>
+                            </tr>
+                            <tr>
+                                <td><code>parent</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">HTMLElement</span></td>
+                                <td><code>document.body</code></td>
+                                <td>DOM element the modal is appended to.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Params</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>renderComponent(component, placement?)</code></td>
+                            <td><code>component</code> — BaseComponent<br><code>placement</code> — <code>'body'</code> | <code>'header'</code> | <code>'footer'</code> | <code>'controls'</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Renders a component into the specified placement. Defaults to <code>'body'</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>show()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Shows the modal.</td>
+                        </tr>
+                        <tr>
+                            <td><code>hide()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Hides the modal without removing it from the DOM.</td>
+                        </tr>
+                        <tr>
+                            <td><code>remove()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Removes the modal from the DOM entirely.</td>
+                        </tr>
+                        <tr>
+                            <td><code>bind(name)</code></td>
+                            <td><code>name</code> — string</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Binds the modal to all elements with <code>y-win="name"</code>. Clicking them opens the modal.</td>
+                        </tr>
+                        <tr>
+                            <td><code>setSize(size)</code></td>
+                            <td><code>size</code> — <code>'nano'</code> | <code>'small'</code> | <code>'default'</code> | <code>'medium'</code> | <code>'large'</code> | <code>'giant'</code> | <code>'full'</code></td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Changes the modal size at any time.</td>
+                        </tr>
+                        <tr>
+                            <td><code>setPosition(pos)</code></td>
+                            <td><code>pos</code> — string</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Sets modal position class. Used by <code>YurbaUI.Toast</code> for corner positioning.</td>
+                        </tr>
+                        <tr>
+                            <td><code>closeOnOutsideClick()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Hides the modal when the user clicks outside the window.</td>
+                        </tr>
+                        <tr>
+                            <td><code>hideOnTimeout(ms, opts?)</code></td>
+                            <td><code>ms</code> — number</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Auto-hides the modal after <code>ms</code> milliseconds from the moment it is shown.</td>
+                        </tr>
+                        <tr>
+                            <td><code>isShowed()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">boolean</span></td>
+                            <td>Returns <code>true</code> if the modal is currently visible.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Element properties</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>modal.modalBody</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Main content area. Append custom elements directly if needed.</td>
+                        </tr>
+                        <tr>
+                            <td><code>modal.modalHeader</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Header area (above the body).</td>
+                        </tr>
+                        <tr>
+                            <td><code>modal.modalFooterBody</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Footer action bar (below the body).</td>
+                        </tr>
+                        <tr>
+                            <td><code>modal.modalControls</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Top-right controls slot (for icon buttons next to close).</td>
+                        </tr>
+                        <tr>
+                            <td><code>modal.modalClose</code></td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>The built-in close button element.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Basic modal</div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
+modal.renderComponent(new YurbaUI.Title('Hello World'))
+modal.renderComponent(new YurbaUI.Description('A simple modal window'))
+modal.renderComponent(new YurbaUI.Text('Body text with &lt;b&gt;HTML&lt;/b&gt; support.'))
+modal.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-basic">Open</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">With footer button</div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
+modal.renderComponent(new YurbaUI.Title('With footer'))
+modal.renderComponent(new YurbaUI.Text('This modal has an action bar at the bottom.'))
+
+const closeBtn = new YurbaUI.IconButton(
+    { icon: '&lt;span class="material-symbols-rounded"&gt;close&lt;/span&gt;', name: 'Dismiss' },
+    () =&gt; modal.hide()
+)
+modal.renderComponent(closeBtn, 'footer')
+modal.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-footer">Open</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Close on outside click</div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
+modal.renderComponent(new YurbaUI.Title('Click outside to close'))
+modal.renderComponent(new YurbaUI.Text('Click anywhere outside this window to dismiss it.'))
+modal.closeOnOutsideClick()
+modal.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-outside">Open</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Sizes — <code>setSize(size)</code></div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
+// nano | small | default | medium | large | giant | full
+modal.setSize('large')
+modal.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-sizes">Open size picker</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Attribute binding — <code>bind(name)</code></div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
+modal.renderComponent(new YurbaUI.Title('Bound modal'))
+modal.bind('my-modal')</code></pre>
+                            <pre><code class="language-html">&lt;button y-win="my-modal"&gt;Open&lt;/button&gt;</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn secondary" y-win="bound-modal">Open via attribute</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-panel" id="tab-toast">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Toast</h2>
+                <p class="doc-component-desc">Factory function that creates a notification toast positioned anywhere on screen. Returns a <code>Modal</code> instance — call <code>.setPosition()</code> and <code>.show()</code> on it.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Usage</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const toast = YurbaUI.Toast(props)
+toast.setPosition(position)
+toast.show()</code></pre>
+                    </div>
+                    <div class="note"><strong>Note:</strong> <code>YurbaUI.Toast</code> is a function, not a constructor — do not use <code>new</code>.</div>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Props</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Prop</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="required-badge">required</span></td>
+                            <td>Notification text displayed in the toast.</td>
+                        </tr>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="optional-badge">optional</span></td>
+                            <td>Raw HTML icon string, e.g. <code>'&lt;span class="material-symbols-rounded"&gt;check&lt;/span&gt;'</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>iconType</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="optional-badge">optional</span></td>
+                            <td>Colors the icon area. Values: <code>'success'</code> | <code>'danger'</code> | <code>'warn'</code> | <code>'info'</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>timeout</code></td>
+                            <td><span class="type-badge">number</span></td>
+                            <td><span class="optional-badge">optional</span></td>
+                            <td>Auto-close delay in milliseconds after the toast appears.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">setPosition(pos) — available positions</div>
+                <table class="api-table">
+                    <thead>
+                        <tr><th>Value</th><th>Placement</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>'top-left'</code></td><td>Top-left corner</td></tr>
+                        <tr><td><code>'top-right'</code></td><td>Top-right corner</td></tr>
+                        <tr><td><code>'top-center'</code></td><td>Top center</td></tr>
+                        <tr><td><code>'bottom-left'</code></td><td>Bottom-left corner</td></tr>
+                        <tr><td><code>'bottom-right'</code></td><td>Bottom-right corner</td></tr>
+                        <tr><td><code>'bottom-center'</code></td><td>Bottom center</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Default</div>
+                            <pre><code class="language-javascript">const t = YurbaUI.Toast({ title: 'Notification' })
+t.setPosition('top-right')
+t.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-toast-default">Show</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Success</div>
+                            <pre><code class="language-javascript">const t = YurbaUI.Toast({
+    title: 'Saved successfully',
+    icon: '&lt;span class="material-symbols-rounded"&gt;check&lt;/span&gt;',
+    iconType: 'success'
+})
+t.setPosition('top-right')
+t.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-toast-success">Show</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Danger</div>
+                            <pre><code class="language-javascript">const t = YurbaUI.Toast({
+    title: 'Something went wrong',
+    icon: '&lt;span class="material-symbols-rounded"&gt;exclamation&lt;/span&gt;',
+    iconType: 'danger'
+})
+t.setPosition('top-right')
+t.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-toast-danger">Show</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Warning</div>
+                            <pre><code class="language-javascript">const t = YurbaUI.Toast({
+    title: 'Check your input',
+    icon: '&lt;span class="material-symbols-rounded"&gt;exclamation&lt;/span&gt;',
+    iconType: 'warn'
+})
+t.setPosition('top-right')
+t.show()</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-toast-warn">Show</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-panel" id="tab-tooltip">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Tooltip</h2>
+                <p class="doc-component-desc">Attaches a hoverable popover to any DOM element. Automatically repositions itself when near screen edges.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Tooltip(element, options)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Type</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>pos</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td><code>'top'</code></td>
+                                <td>Preferred position: <code>'top'</code> | <code>'bottom'</code> | <code>'left'</code> | <code>'right'</code>. Flipped automatically if near an edge.</td>
+                            </tr>
+                            <tr>
+                                <td><code>title</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>Tooltip title text shown in the header.</td>
+                            </tr>
+                            <tr>
+                                <td><code>content</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>Tooltip body text.</td>
+                            </tr>
+                            <tr>
+                                <td><code>icon</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>Raw HTML icon string placed in the tooltip header.</td>
+                            </tr>
+                            <tr>
+                                <td><code>className</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>CSS class added to the tooltip header element (e.g. <code>'popover-info'</code>, <code>'popover-danger'</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>delay</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">number</span></td>
+                                <td>—</td>
+                                <td>Delay in milliseconds before the tooltip appears on hover.</td>
+                            </tr>
+                            <tr>
+                                <td><code>offset</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">number</span></td>
+                                <td>—</td>
+                                <td>Distance in pixels between the target element and the tooltip.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Params</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>show()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Force-shows the tooltip programmatically.</td>
+                        </tr>
+                        <tr>
+                            <td><code>hide()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Force-hides the tooltip programmatically.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Positions</div>
+                            <div class="tooltip-row">
+                                <span class="tooltip-target" id="tt-top">Top</span>
+                                <span class="tooltip-target" id="tt-bottom">Bottom</span>
+                                <span class="tooltip-target" id="tt-left">Left</span>
+                                <span class="tooltip-target" id="tt-right">Right</span>
+                            </div>
+                            <pre><code class="language-javascript">new YurbaUI.Tooltip(el, { pos: 'top',    title: 'Title', content: 'Content' })
+new YurbaUI.Tooltip(el, { pos: 'bottom', title: 'Title', content: 'Content' })
+new YurbaUI.Tooltip(el, { pos: 'left',   title: 'Title', content: 'Content' })
+new YurbaUI.Tooltip(el, { pos: 'right',  title: 'Title', content: 'Content' })</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">With icon</div>
+                            <div class="tooltip-row">
+                                <span class="tooltip-target" id="tt-icon">Hover me</span>
+                            </div>
+                            <pre><code class="language-javascript">new YurbaUI.Tooltip(el, {
+    pos: 'top',
+    title: 'With icon',
+    content: 'This tooltip has an icon',
+    icon: '&lt;span class="material-symbols-rounded"&gt;info&lt;/span&gt;'
+})</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Custom header color via <code>className</code></div>
+                            <div class="tooltip-row">
+                                <span class="tooltip-target" id="tt-class-info">Info</span>
+                                <span class="tooltip-target" id="tt-class-default">Default</span>
+                                <span class="tooltip-target" id="tt-class-danger">Danger</span>
+                            </div>
+                            <pre><code class="language-javascript">new YurbaUI.Tooltip(el, {
+    pos: 'top',
+    title: 'Info badge',
+    content: 'Styled with className',
+    className: 'popover-info'   // popover-info | popover-default | popover-danger
+})</code></pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-panel" id="tab-select">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Select</h2>
+                <p class="doc-component-desc">Styled dropdown select component. Renders inside any container and supports icons, default values, and programmatic control. Automatically repositions if near screen edges.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const select = new YurbaUI.Select(options[], settings?)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Option shape</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>value</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="required-badge">required</span></td>
+                            <td>Internal value identifier.</td>
+                        </tr>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="required-badge">required</span></td>
+                            <td>Display text shown in the dropdown and trigger.</td>
+                        </tr>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td><span class="optional-badge">optional</span></td>
+                            <td>Icon HTML string or emoji shown next to the label.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Settings</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>value</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>—</td>
+                            <td>Initially selected value (single mode).</td>
+                        </tr>
+                        <tr>
+                            <td><code>multiple</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">boolean</span></td>
+                            <td><code>false</code></td>
+                            <td>Enables multi-select mode with checkboxes. Menu stays open on click.</td>
+                        </tr>
+                        <tr>
+                            <td><code>values</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">string[]</span></td>
+                            <td><code>[]</code></td>
+                            <td>Initially selected values (multi mode).</td>
+                        </tr>
+                        <tr>
+                            <td><code>placeholder</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>—</td>
+                            <td>Placeholder text shown when nothing is selected.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Params</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>render()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Returns the component root element. Append it to the DOM.</td>
+                        </tr>
+                        <tr>
+                            <td><code>getValue()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">string</span> | <span class="type-badge">string[]</span></td>
+                            <td>Returns the selected value. In multi mode returns an array.</td>
+                        </tr>
+                        <tr>
+                            <td><code>setValue(value)</code></td>
+                            <td><code>value</code> — string | string[]</td>
+                            <td><span class="type-badge">this</span></td>
+                            <td>Programmatically sets the selected value(s) and updates the trigger label.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onChange(callback)</code></td>
+                            <td>single: <code>callback(value, option)</code><br>multi: <code>callback(values[], options[])</code></td>
+                            <td><span class="type-badge">this</span></td>
+                            <td>Registers a handler called whenever the selection changes.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Basic</div>
+                            <pre><code class="language-javascript">const select = new YurbaUI.Select([
+    { value: 'apple',  label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'cherry', label: 'Cherry' },
+])
+select.onChange((value) => console.log('Selected:', value))
+container.appendChild(select.render())</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-select"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">With icons and default value</div>
+                            <pre><code class="language-javascript">const select = new YurbaUI.Select([
+    { value: 'public',  label: 'Public',  icon: '🌍' },
+    { value: 'friends', label: 'Friends', icon: '👥' },
+    { value: 'private', label: 'Only me', icon: '🔒' },
+], { value: 'public' })
+select.onChange((value, option) => console.log(value, option))</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-select-icons"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Multi-select</div>
+                            <pre><code class="language-javascript">const select = new YurbaUI.Select([
+    { value: 'read',    label: 'Read' },
+    { value: 'write',   label: 'Write' },
+    { value: 'delete',  label: 'Delete' },
+    { value: 'admin',   label: 'Admin' },
+], { multiple: true, values: ['read', 'write'] })
+select.onChange((values) => console.log(values))
+container.appendChild(select.render())</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-select-multi"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Many options (scroll)</div>
+                            <pre><code class="language-javascript">const options = Array.from({ length: 20 }, (_, i) => ({
+    value: `opt${i}`,
+    label: `Option ${i + 1}`,
+}))
+const select = new YurbaUI.Select(options, { multiple: true })
+container.appendChild(select.render())</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-select-scroll"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-panel" id="tab-dropdown">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Dropdown</h2>
+                <p class="doc-component-desc">Panel anchored to a trigger button. Works in two modes: <strong>items[]</strong> for simple action menus (with icons, separators, callbacks), or <strong>custom content</strong> for arbitrary HTML panels (notifications, user menus, etc.). Repositions automatically near screen edges. Dispatches <code>yurba-dropdown:open</code> / <code>yurba-dropdown:close</code> events on the menu element.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const dropdown = new YurbaUI.Dropdown(items[], options?)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Item shape</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>Item text. Not needed when <code>separator: true</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>Raw HTML icon string shown before the label.</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>One or more CSS classes added to the item <code>&lt;button&gt;</code>. Use <code>'text-danger'</code> for destructive actions.</td>
+                        </tr>
+                        <tr>
+                            <td><code>separator</code></td>
+                            <td><span class="type-badge">boolean</span></td>
+                            <td>When <code>true</code>, renders a horizontal divider instead of a button.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClick</code></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>Click handler called when the item is selected.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Options</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>trigger</code> <span class="required-badge">required</span></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>—</td>
+                            <td>Raw HTML rendered inside the trigger button.</td>
+                        </tr>
+                        <tr>
+                            <td><code>content</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">HTMLElement</span> | <span class="type-badge">string</span></td>
+                            <td>—</td>
+                            <td>Custom content rendered inside the panel. When set, <code>items[]</code> is ignored.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onOpen</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>—</td>
+                            <td>Called when the panel opens. Receives the menu <code>HTMLElement</code>. Use for lazy data loading.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClose</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>—</td>
+                            <td>Called when the panel closes.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Params</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>render()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Returns the wrapper element (trigger + menu). Append it to the DOM. Sets <code>.menu</code> property.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Items menu</div>
+                            <pre><code class="language-javascript">const dropdown = new YurbaUI.Dropdown([
+    { label: 'Edit',   icon: '&lt;span class="material-symbols-rounded"&gt;edit&lt;/span&gt;' },
+    { label: 'Share',  icon: '&lt;span class="material-symbols-rounded"&gt;share&lt;/span&gt;' },
+    { separator: true },
+    {
+        label: 'Delete',
+        icon: '&lt;span class="material-symbols-rounded"&gt;delete&lt;/span&gt;',
+        className: 'text-danger',
+        onClick: () => console.log('Delete')
+    },
+], { trigger: '&lt;span class="material-symbols-rounded"&gt;more_vert&lt;/span&gt;' })
+container.appendChild(dropdown.render())</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Nested (multi-level)</div>
+                            <pre><code class="language-javascript">const dropdown = new YurbaUI.Dropdown([
+    { label: 'Edit', icon: '...', onClick: () => {} },
+    {
+        label: 'Share',
+        icon: '...',
+        children: [
+            { label: 'Copy link', icon: '...', onClick: () => {} },
+            {
+                label: 'Send to',
+                icon: '...',
+                children: [
+                    { label: 'Message', onClick: () => {} },
+                    { label: 'Email',   onClick: () => {} },
+                ]
+            },
+        ]
+    },
+    { separator: true },
+    { label: 'Delete', className: 'text-danger', onClick: () => {} },
+], { trigger: '...' })
+container.appendChild(dropdown.render())</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-dropdown-nested"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Custom content panel</div>
+                            <pre><code class="language-javascript">const panel = document.createElement('div')
+panel.style.padding = '12px'
+panel.innerHTML = '&lt;p&gt;Loading...&lt;/p&gt;'
+
+const dropdown = new YurbaUI.Dropdown([], {
+    trigger: '&lt;span class="material-symbols-rounded"&gt;notifications&lt;/span&gt;',
+    content: panel,
+    onOpen: (menu) => {
+        // lazy load — called once per open
+        panel.innerHTML = '&lt;p&gt;No new notifications&lt;/p&gt;'
+    },
+})
+
+// DOM event alternative
+dropdown.render()
+dropdown.menu.addEventListener('yurba-dropdown:open', () => {
+    console.log('opened')
+})
+container.appendChild(dropdown.el)</code></pre>
+                            <div class="demo-card-actions">
+                                <div id="demo-dropdown-custom"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="tab-panel" id="tab-other">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">Components &amp; Placements</h2>
+                <p class="doc-component-desc">Content components passed to <code>modal.renderComponent(component, placement?)</code>. Each component extends <code>BaseComponent</code> and carries a default placement that can be overridden.</p>
+            </div>
+
+            <!-- Placements -->
+            <div class="doc-section">
+                <div class="doc-section-title">Placements</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">modal.renderComponent(component, placement?)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Area</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>'body'</code></td>
+                                <td><code>modal.modalBody</code></td>
+                                <td>Main scrollable content area. Default for most components.</td>
+                            </tr>
+                            <tr>
+                                <td><code>'header'</code></td>
+                                <td><code>modal.modalHeader</code></td>
+                                <td>Above the body. Default for Title, Description, TitleIcon.</td>
+                            </tr>
+                            <tr>
+                                <td><code>'footer'</code></td>
+                                <td><code>modal.modalFooterBody</code></td>
+                                <td>Action bar below the body. Typically holds IconButton actions.</td>
+                            </tr>
+                            <tr>
+                                <td><code>'controls'</code></td>
+                                <td><code>modal.modalControls</code></td>
+                                <td>Top-right slot next to the close button. For auxiliary icon controls.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note"><strong>Default placement:</strong> when <code>placement</code> is omitted, each component uses its own default (shown per component below).</div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.Title</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Title(text)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>text</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Title text. HTML is supported.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'header'</code></div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.Description</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Description(text)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>text</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Subtitle/description text shown beneath the title. HTML is supported.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'header'</code></div>
+                </div>
+            </div>
+
+            <!-- Text -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.Text</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Text(html)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>html</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Body paragraph content. Renders as <code>&lt;p&gt;</code>. Full HTML support.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'body'</code></div>
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.Image</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Image(url)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>url</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Image URL. Renders as a full-width <code>&lt;img&gt;</code>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'body'</code></div>
+                </div>
+            </div>
+
+            <!-- IconButton -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.IconButton</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.IconButton({ icon, name? }, onClick?)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>icon</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Raw HTML icon string.</td>
+                            </tr>
+                            <tr>
+                                <td><code>name</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Label shown below the icon. When omitted the button renders icon-only.</td>
+                            </tr>
+                            <tr>
+                                <td><code>onClick</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">function</span></td>
+                                <td>Second argument — click handler called when the button is pressed.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'body'</code>. Commonly placed in <code>'footer'</code> or <code>'controls'</code>.</div>
+                </div>
+            </div>
+
+            <!-- TitleIcon -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.TitleIcon</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.TitleIcon({ icon, type? })</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>icon</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>Raw HTML icon string displayed as the modal's decorative icon.</td>
+                            </tr>
+                            <tr>
+                                <td><code>type</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td><code>'default'</code></td>
+                                <td>CSS type class applied to the icon container for color theming.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'header'</code></div>
+                </div>
+            </div>
+
+            <!-- MaterialIcon -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.MaterialIcon</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.MaterialIcon(name)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>name</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Material Symbols icon name (e.g. <code>'check'</code>, <code>'edit'</code>). Renders as <code>&lt;span class="material-symbols-rounded"&gt;</code>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'body'</code>. Requires Material Symbols font to be loaded.</div>
+                </div>
+            </div>
+
+            <!-- YurbaIcon -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.YurbaIcon</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.YurbaIcon(name)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>name</code></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td>Yurba icon name. Renders as <code>&lt;span class="yrb yrb-{name}"&gt;</code>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">Default placement: <code>'body'</code>. Requires the Yurba icon font.</div>
+                </div>
+            </div>
+
+            <!-- Group -->
+            <div class="doc-section">
+                <div class="doc-section-title">YurbaUI.Group</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const group = new YurbaUI.Group(...components)
+
+// Add components after creation
+group.add(component)
+
+// Apply CSS classes to the group wrapper
+group.addClass('my-class', 'another-class')</code></pre>
+                    </div>
+                    <div class="note">Wraps multiple components in a single <code>.y-win__group</code> container. Duplicate components are silently ignored. Default placement: <code>'body'</code>.</div>
+                    <table class="api-table">
+                        <thead><tr><th>Method</th><th>Params</th><th>Returns</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>add(component)</code></td>
+                                <td><code>component</code> — BaseComponent</td>
+                                <td><span class="type-badge">void</span></td>
+                                <td>Appends a component to the group after construction.</td>
+                            </tr>
+                            <tr>
+                                <td><code>addClass(...names)</code></td>
+                                <td><code>...names</code> — string</td>
+                                <td><span class="type-badge">void</span></td>
+                                <td>Adds one or more CSS classes to the group wrapper element.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <div class="log-wrap">
+        <div class="log" id="log"><span class="line"><span class="t">--</span>Ready.</span></div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll()</script>
+
+</body>
+
+</html>

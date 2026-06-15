@@ -1,0 +1,131 @@
+.y-select {
+    position: relative;
+    display: inline-flex;
+    font-size: 14px;
+}
+
+.y-select__trigger {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: var(--y-win-action-bg);
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    min-width: 100px;
+    transition: .1s;
+    box-sizing: border-box;
+}
+
+.y-select__trigger:hover {
+    background: var(--y-win-action-bg-hover);
+}
+
+.y-select__label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.y-select__arrow {
+    display: flex;
+    align-items: center;
+    opacity: .5;
+    flex-shrink: 0;
+}
+
+.y-select__menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    background: var(--y-win-bg);
+    border: 1px solid var(--y-win-divider);
+    border-radius: var(--y-win-border-radius);
+    box-shadow: #0000001c 0 5px 20px;
+    z-index: 9999;
+    overflow: hidden;
+    max-height: 240px;
+    opacity: 0;
+    transform: translateY(4px) scale(.98);
+    transition: .15s ease;
+    pointer-events: none;
+    padding: 4px;
+}
+
+.y-select__menu:not(.y-win__hidden) {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    overflow-y: auto;
+}
+
+.y-select__item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .1s;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.y-select__item:hover {
+    background: var(--y-win-action-bg);
+}
+
+.y-select__item--active {
+    font-weight: 600;
+}
+
+.y-select__item-icon {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+}
+
+.y-select__placeholder {
+    opacity: .5;
+}
+
+.y-select__multi-sep {
+    margin-right: 4px;
+    opacity: .4;
+}
+
+.y-select__check {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--y-win-divider);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .1s;
+}
+
+.y-select__item--active .y-select__check {
+    background: var(--y-win-accent, #5b7cf6);
+    border-color: var(--y-win-accent, #5b7cf6);
+}
+
+.y-select__item--active .y-select__check::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 7px;
+    border: 1.5px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+}
