@@ -116,101 +116,79 @@ var __yurbaui__ = (() => {
   var hasDuplicates = (arr) => new Set(arr).size !== arr.length;
 
   // source/components/Modal/index.js
-  var _Modal_instances, bindUpdates_fn, bindYModalAttributes_fn;
+  var _Modal_instances, initModal_fn, mount_fn, fireClose_fn, bindUpdates_fn, bindYModalAttributes_fn;
   var Modal = class {
     constructor(properties = {}) {
       __privateAdd(this, _Modal_instances);
       const size = "size" in properties ? properties.size : "default";
       this.size = size;
-      this.modal = document.createElement("div");
-      this.modal.style.display = "none";
-      this.modal.classList.add("y-win__wrapper", "y-win__hidden", size);
-      this.modal.innerHTML = `
-            <div class="y-win">
-                <div class="y-win__header">
-                    <div class="y-win__header-body"></div>
-                    <div class="y-win__header-actions">
-                        <div class="y-win__controls"></div>
-                        <button class="y-win__close" id="close" aria-label="Close">
-                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="y-win__body"></div>
-                <div class="y-win__footer-wrapper">
-                    <div class="y-win__footer"></div>
-                </div>
-            </div>
-        `;
-      setTimeout(() => {
-        this.modal.style.display = "";
-      }, 100);
-      if ("parent" in properties) {
-        if (properties.parent instanceof HTMLElement) {
-          properties.parent.appendChild(this.modal);
-        } else {
-          error("properties.parent must be an HTML element");
-        }
-      } else {
-        document.body.appendChild(this.modal);
+      this._properties = properties;
+      this._mounted = false;
+      this._outsideClickEnabled = properties.closeOnOutsideClick ?? true;
+      this._onClose = properties.onClose ?? null;
+      this._renderQueue = [];
+      this._setupHooks = [];
+      if (Array.isArray(properties.components)) {
+        properties.components.forEach((c) => this._renderQueue.push({ component: c.content, placement: c.area }));
       }
-      this.modalHeader = this.modal.querySelector(".y-win__header-body");
-      this.modalControls = this.modal.querySelector(".y-win__controls");
-      this.modalBody = this.modal.querySelector(".y-win__body");
-      this.modalFooter = this.modal.querySelector(".y-win__footer-wrapper");
-      this.modalFooterBody = this.modal.querySelector(".y-win__footer");
-      this.modalClose = this.modal.querySelector("#close");
-      __privateMethod(this, _Modal_instances, bindYModalAttributes_fn).call(this);
+      this.modal = null;
+      this.modalHeader = null;
+      this.modalControls = null;
+      this.modalBody = null;
+      this.modalFooter = null;
+      this.modalFooterBody = null;
+      this.modalClose = null;
       this.type = "modal";
       this.showed = false;
       UIElements.push(this);
-      this.modalClose.addEventListener("click", () => {
-        this.hide();
-      });
+      __privateMethod(this, _Modal_instances, bindYModalAttributes_fn).call(this);
     }
     renderComponent(component, customPlacement) {
-      const placements = {
-        body: this.modalBody,
-        header: this.modalHeader,
-        footer: this.modalFooterBody,
-        controls: this.modalControls
-      };
-      if (component instanceof HTMLElement) {
-        const target = placements[customPlacement ?? "body"];
-        target.appendChild(component);
-        return component;
+      this._renderQueue.push({ component, placement: customPlacement });
+      if (this._mounted) {
+        return __privateMethod(this, _Modal_instances, mount_fn).call(this, component, customPlacement);
       }
+      if (component instanceof HTMLElement) return component;
       if (!(component instanceof BaseComponent)) {
         error("The component must inherit from BaseComponent or be an HTMLElement", "component");
       }
       if (customPlacement) component.placement = customPlacement;
-      const el = component.render();
-      placements[component.placement].appendChild(el);
-      return el;
+      return component.render();
+    }
+    _addSetupHook(fn) {
+      this._setupHooks.push(fn);
+      if (this._mounted) fn(this.modal);
     }
     bind(name) {
       modals[name] = this;
       this.name = name;
     }
     show() {
+      __privateMethod(this, _Modal_instances, initModal_fn).call(this);
       __privateMethod(this, _Modal_instances, bindUpdates_fn).call(this);
       this.showed = true;
-      this.modal.classList.remove("y-win__hidden");
+      const modal = this.modal;
+      void modal.offsetWidth;
+      requestAnimationFrame(() => {
+        if (this.showed && modal) modal.classList.remove("y-win__hidden");
+      });
       if (this.type === "modal") {
         document.body.style.overflow = "hidden";
       }
       if (this._outsideClickEnabled) {
         setTimeout(() => {
           this._outsideClickHandler = (e) => {
-            if (e.target === this.modal || !this.modal.contains(e.target)) this.hide();
+            if (e.target === this.modal || !this.modal.contains(e.target)) {
+              this.hide();
+              __privateMethod(this, _Modal_instances, fireClose_fn).call(this);
+            }
           };
           document.addEventListener("click", this._outsideClickHandler);
         }, 0);
       }
     }
     hide() {
+      if (!this._mounted) return;
       __privateMethod(this, _Modal_instances, bindUpdates_fn).call(this);
       this.showed = false;
       this.modal.classList.add("y-win__hidden");
@@ -222,12 +200,21 @@ var __yurbaui__ = (() => {
         document.removeEventListener("click", this._outsideClickHandler);
         this._outsideClickHandler = null;
       }
+      setTimeout(() => {
+        if (this._mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
+          this.modal.remove();
+          this.modal = null;
+          this._mounted = false;
+        }
+      }, 300);
     }
     remove() {
       const idx = UIElements.indexOf(this);
       if (idx !== -1) {
         UIElements.splice(idx, 1);
-        this.modal.remove();
+        if (this._mounted && this.modal) {
+          this.modal.remove();
+        }
       }
     }
     hideOnTimeout(time = 0, properties = {}) {
@@ -251,6 +238,7 @@ var __yurbaui__ = (() => {
       }
     }
     setSize(size) {
+      __privateMethod(this, _Modal_instances, initModal_fn).call(this);
       const sizes = ["full", "giant", "large", "medium", "default", "small", "nano"];
       if (sizes.includes(size)) {
         this.modal.classList.remove(this.size);
@@ -261,6 +249,7 @@ var __yurbaui__ = (() => {
       }
     }
     setPosition(pos) {
+      __privateMethod(this, _Modal_instances, initModal_fn).call(this);
       const positions = {
         right: "y-win__pos-right",
         center: "y-win__pos-center",
@@ -281,11 +270,77 @@ var __yurbaui__ = (() => {
     isShowed() {
       return this.showed;
     }
-    closeOnOutsideClick() {
-      this._outsideClickEnabled = true;
-    }
   };
   _Modal_instances = new WeakSet();
+  initModal_fn = function() {
+    if (this._mounted) return;
+    this.modal = document.createElement("div");
+    this.modal.classList.add("y-win__wrapper", "y-win__hidden", this.size);
+    this.modal.innerHTML = `
+            <div class="y-win">
+                <div class="y-win__header">
+                    <div class="y-win__header-body"></div>
+                    <div class="y-win__header-actions">
+                        <div class="y-win__controls"></div>
+                        <button class="y-win__close" id="close" aria-label="Close">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="y-win__body"></div>
+                <div class="y-win__footer-wrapper">
+                    <div class="y-win__footer"></div>
+                </div>
+            </div>
+        `;
+    if ("parent" in this._properties) {
+      if (this._properties.parent instanceof HTMLElement) {
+        this._properties.parent.appendChild(this.modal);
+      } else {
+        error("properties.parent must be an HTML element");
+      }
+    } else {
+      document.body.appendChild(this.modal);
+    }
+    this.modalHeader = this.modal.querySelector(".y-win__header-body");
+    this.modalControls = this.modal.querySelector(".y-win__controls");
+    this.modalBody = this.modal.querySelector(".y-win__body");
+    this.modalFooter = this.modal.querySelector(".y-win__footer-wrapper");
+    this.modalFooterBody = this.modal.querySelector(".y-win__footer");
+    this.modalClose = this.modal.querySelector("#close");
+    this.modalClose.addEventListener("click", () => {
+      this.hide();
+      __privateMethod(this, _Modal_instances, fireClose_fn).call(this);
+    });
+    this._mounted = true;
+    this._setupHooks.forEach((fn) => fn(this.modal));
+    this._renderQueue.forEach(({ component, placement }) => __privateMethod(this, _Modal_instances, mount_fn).call(this, component, placement));
+  };
+  mount_fn = function(component, customPlacement) {
+    const placements = {
+      body: this.modalBody,
+      header: this.modalHeader,
+      footer: this.modalFooterBody,
+      controls: this.modalControls
+    };
+    if (component instanceof HTMLElement) {
+      const target = placements[customPlacement ?? "body"];
+      target.appendChild(component);
+      return component;
+    }
+    if (!(component instanceof BaseComponent)) {
+      error("The component must inherit from BaseComponent or be an HTMLElement", "component");
+    }
+    if (customPlacement) component.placement = customPlacement;
+    const el = component.render();
+    placements[component.placement].appendChild(el);
+    return el;
+  };
+  fireClose_fn = function() {
+    if (this._onClose) this._onClose();
+  };
   bindUpdates_fn = function() {
     if (this.modalHeader.childNodes.length === 0) {
       this.modalHeader.classList.add("y-win__header-empty");
@@ -374,9 +429,12 @@ var __yurbaui__ = (() => {
     constructor(properties = {}) {
       super();
       this.type = "toast";
-      this.modal.setAttribute("type", "toast");
-      this.modal.style.setProperty("--y-win-body-padding", "5px 10px 15px 15px");
-      this.modal.style.setProperty("--y-win-header-padding", "10px");
+      this._timeout = properties.timeout ?? 2e3;
+      this._addSetupHook((modal) => {
+        modal.setAttribute("type", "toast");
+        modal.style.setProperty("--y-win-body-padding", "5px 10px 15px 15px");
+        modal.style.setProperty("--y-win-header-padding", "10px");
+      });
       const title = new TitleComponent(properties.title ?? "Untitled");
       if (properties.icon) {
         const icon = new TitleIconComponent({ icon: properties.icon, type: properties.iconType });
@@ -386,7 +444,10 @@ var __yurbaui__ = (() => {
       } else {
         this.renderComponent(title, "header");
       }
-      this.hideOnTimeout(properties.timeout ?? 2e3, { notHideWhenHovered: true });
+    }
+    show() {
+      super.show();
+      this.hideOnTimeout(this._timeout, { notHideWhenHovered: true });
     }
   };
 
@@ -406,23 +467,18 @@ var __yurbaui__ = (() => {
       this.tooltip = null;
       this.showTimeout = null;
       this.hideTimeout = null;
+      this._mounted = false;
       this._init();
     }
     _init() {
-      this._createTooltip();
       this.target.addEventListener("mouseenter", () => this._scheduleShow());
       this.target.addEventListener("mouseleave", () => this._scheduleHide());
-      this.tooltip.addEventListener("mouseenter", () => this._clearHide());
-      this.tooltip.addEventListener("mouseleave", () => this._scheduleHide());
     }
     _createTooltip() {
+      if (this._mounted) return;
       const tooltip = document.createElement("div");
-      tooltip.style.display = "none";
       tooltip.classList.add("y-tooltip", "y-win__hidden");
       if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean));
-      setTimeout(() => {
-        tooltip.style.display = "";
-      }, 100);
       let header = "";
       if (this.props.title) {
         if (this.props.icon instanceof BaseComponent) {
@@ -440,7 +496,10 @@ var __yurbaui__ = (() => {
             <div class="y-tooltip__content">${this.props.content}</div>
         `;
       document.body.appendChild(tooltip);
+      tooltip.addEventListener("mouseenter", () => this._clearHide());
+      tooltip.addEventListener("mouseleave", () => this._scheduleHide());
       this.tooltip = tooltip;
+      this._mounted = true;
     }
     _scheduleShow() {
       this._clearHide();
@@ -463,8 +522,8 @@ var __yurbaui__ = (() => {
       }
     }
     show() {
+      this._createTooltip();
       const offset = this.props.offset;
-      this.tooltip.classList.remove("y-win__hidden");
       const rect = this.target.getBoundingClientRect();
       const tRect = this.tooltip.getBoundingClientRect();
       let pos = this.props.pos;
@@ -499,9 +558,20 @@ var __yurbaui__ = (() => {
       if (top + tRect.height > window.innerHeight - pad) top = window.innerHeight - tRect.height - pad;
       this.tooltip.style.top = `${top + window.scrollY}px`;
       this.tooltip.style.left = `${left + window.scrollX}px`;
+      void this.tooltip.offsetWidth;
+      requestAnimationFrame(() => {
+        if (this.tooltip) this.tooltip.classList.remove("y-win__hidden");
+      });
     }
     hide() {
+      if (!this.tooltip) return;
       this.tooltip.classList.add("y-win__hidden");
+      setTimeout(() => {
+        if (this.tooltip && this.tooltip.classList.contains("y-win__hidden")) {
+          this.tooltip.remove();
+          this._mounted = false;
+        }
+      }, 300);
     }
   };
 
@@ -578,6 +648,104 @@ var __yurbaui__ = (() => {
     }
   };
 
+  // source/helpers/menu.js
+  function anchorFixed(trigger, menu, align = "left") {
+    const pad = 8;
+    const gap = 4;
+    const tRect = trigger.getBoundingClientRect();
+    const mw = menu.offsetWidth;
+    const mh = menu.offsetHeight;
+    let left = align === "right" ? tRect.right - mw : tRect.left;
+    if (left + mw > window.innerWidth - pad) left = window.innerWidth - mw - pad;
+    if (left < pad) left = pad;
+    let top = tRect.bottom + gap;
+    if (top + mh > window.innerHeight - pad) {
+      const above = tRect.top - gap - mh;
+      top = above >= pad ? above : Math.max(pad, window.innerHeight - mh - pad);
+    }
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+  }
+  function repositionSubmenu(trigger, submenu) {
+    submenu.style.top = "";
+    submenu.style.bottom = "";
+    submenu.style.left = "";
+    submenu.style.right = "";
+    const pad = 8;
+    const tRect = trigger.getBoundingClientRect();
+    const mRect = submenu.getBoundingClientRect();
+    if (tRect.right + mRect.width > window.innerWidth - pad) {
+      submenu.style.left = "auto";
+      submenu.style.right = "100%";
+    } else {
+      submenu.style.left = "100%";
+      submenu.style.right = "auto";
+    }
+    if (tRect.top + mRect.height > window.innerHeight - pad) {
+      submenu.style.top = "auto";
+      submenu.style.bottom = "0";
+    } else {
+      submenu.style.top = "0";
+      submenu.style.bottom = "auto";
+    }
+  }
+  function buildMenuItems(items, container, onCloseAll) {
+    items.forEach((item) => {
+      if (item.separator) {
+        const sep = document.createElement("div");
+        sep.className = "y-dropdown__separator";
+        container.appendChild(sep);
+        return;
+      }
+      const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+      const hasSubmenu = item.submenu != null;
+      const isParent = hasChildren || hasSubmenu;
+      const btn = document.createElement("button");
+      btn.className = "y-dropdown__item" + (isParent ? " y-dropdown__item--has-children" : "");
+      btn.type = "button";
+      if (item.className) btn.classList.add(...item.className.split(" ").filter(Boolean));
+      btn.innerHTML = `${item.icon ? '<span class="y-dropdown__item-icon">' + item.icon + "</span>" : ""}<span class="y-dropdown__item-label">${item.label}</span>${isParent ? '<span class="y-dropdown__item-arrow">\u203A</span>' : ""}`;
+      if (item.onClick) {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          onCloseAll();
+          item.onClick(e);
+        });
+      }
+      if (isParent) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "y-dropdown__item-wrapper";
+        const submenu = document.createElement("div");
+        submenu.className = "y-dropdown__menu y-dropdown__submenu y-win__hidden";
+        if (hasChildren) {
+          buildMenuItems(item.children, submenu, onCloseAll);
+        } else if (item.submenu instanceof HTMLElement) {
+          submenu.appendChild(item.submenu);
+        } else {
+          submenu.innerHTML = String(item.submenu);
+        }
+        let hideTimer = null;
+        const showSub = () => {
+          clearTimeout(hideTimer);
+          repositionSubmenu(btn, submenu);
+          submenu.classList.remove("y-win__hidden");
+        };
+        const hideSub = () => {
+          hideTimer = setTimeout(() => submenu.classList.add("y-win__hidden"), 80);
+        };
+        btn.addEventListener("mouseenter", showSub);
+        btn.addEventListener("mouseleave", hideSub);
+        submenu.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+        submenu.addEventListener("mouseleave", hideSub);
+        wrapper.appendChild(btn);
+        wrapper.appendChild(submenu);
+        container.appendChild(wrapper);
+      } else {
+        container.appendChild(btn);
+      }
+    });
+  }
+
   // source/components/Select/index.js
   var SelectComponent = class extends BaseComponent {
     constructor(options = [], properties = {}) {
@@ -588,6 +756,9 @@ var __yurbaui__ = (() => {
       this._placeholder = properties.placeholder ?? "Select...";
       this._changeHandlers = [];
       this.placement = "body";
+      this._menuMounted = false;
+      this._menu = null;
+      this._trigger = null;
       if (this._multiple) {
         this._values = Array.isArray(properties.values) ? [...properties.values] : [];
       } else {
@@ -600,50 +771,53 @@ var __yurbaui__ = (() => {
       this._trigger = document.createElement("button");
       this._trigger.className = "y-select__trigger";
       this._trigger.type = "button";
-      this._menu = document.createElement("div");
-      this._menu.className = "y-select__menu y-win__hidden";
       this._syncTrigger();
-      this._renderMenu();
-      el.appendChild(this._trigger);
-      el.appendChild(this._menu);
+      const initMenu = () => {
+        if (this._menuMounted) return;
+        this._menu = document.createElement("div");
+        this._menu.className = "y-select__menu y-select__menu--portal y-win__hidden";
+        this._renderMenu();
+        document.addEventListener("click", (e) => {
+          if (!el.contains(e.target) && !this._menu.contains(e.target)) {
+            this._menu.classList.add("y-win__hidden");
+          }
+        });
+        const reflow = () => {
+          if (!this._menu.classList.contains("y-win__hidden")) this._reposition();
+        };
+        window.addEventListener("scroll", reflow, true);
+        window.addEventListener("resize", reflow);
+        document.body.appendChild(this._menu);
+        this._menuMounted = true;
+      };
       this._trigger.addEventListener("click", (e) => {
         e.stopPropagation();
+        initMenu();
         const closing = !this._menu.classList.contains("y-win__hidden");
         this._menu.classList.add("y-win__hidden");
         if (!closing) {
           this._reposition();
           this._menu.classList.remove("y-win__hidden");
+        } else {
+          setTimeout(() => {
+            if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
+              this._menu.remove();
+              this._menuMounted = false;
+            }
+          }, 300);
         }
       });
-      document.addEventListener("click", () => this._menu.classList.add("y-win__hidden"));
+      el.appendChild(this._trigger);
       this.el = el;
       return el;
     }
     _reposition() {
-      const menu = this._menu;
-      menu.style.top = "";
-      menu.style.bottom = "";
-      menu.style.left = "";
-      menu.style.right = "";
-      const pad = 8;
-      const tRect = this._trigger.getBoundingClientRect();
-      const mRect = menu.getBoundingClientRect();
-      if (tRect.left + mRect.width > window.innerWidth - pad) {
-        menu.style.left = "auto";
-        menu.style.right = "0";
-      } else {
-        menu.style.left = "0";
-        menu.style.right = "auto";
-      }
-      if (tRect.bottom + mRect.height + 4 > window.innerHeight - pad) {
-        menu.style.top = "auto";
-        menu.style.bottom = "calc(100% + 4px)";
-      } else {
-        menu.style.top = "calc(100% + 4px)";
-        menu.style.bottom = "auto";
-      }
+      if (!this._menu) return;
+      this._menu.style.minWidth = this._trigger.getBoundingClientRect().width + "px";
+      anchorFixed(this._trigger, this._menu, "left");
     }
     _syncTrigger() {
+      if (!this._trigger) return;
       const arrow = `<span class="y-select__arrow"><svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
       if (this._multiple) {
         const selected = this._options.filter((o) => this._values.includes(o.value));
@@ -665,6 +839,7 @@ var __yurbaui__ = (() => {
       this._trigger.innerHTML = `<span class="y-select__label">${label}</span>${arrow}`;
     }
     _renderMenu() {
+      if (!this._menu) return;
       this._menu.innerHTML = "";
       this._options.forEach((opt) => {
         const isActive = this._multiple ? this._values.includes(opt.value) : opt.value === this._value;
@@ -691,6 +866,12 @@ var __yurbaui__ = (() => {
             this._renderMenu();
             this._menu.classList.add("y-win__hidden");
             this._changeHandlers.forEach((cb) => cb(opt.value, opt));
+            setTimeout(() => {
+              if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
+                this._menu.remove();
+                this._menuMounted = false;
+              }
+            }, 300);
           }
         });
         this._menu.appendChild(item);
@@ -706,7 +887,7 @@ var __yurbaui__ = (() => {
         this._value = value;
       }
       this._syncTrigger();
-      this._renderMenu();
+      if (this._menuMounted) this._renderMenu();
       return this;
     }
     onChange(cb) {
@@ -728,6 +909,8 @@ var __yurbaui__ = (() => {
       this._align = properties.align ?? "left";
       this._triggerClass = properties.triggerClass ?? null;
       this.placement = "body";
+      this._menuMounted = false;
+      this._menu = null;
     }
     render() {
       const el = document.createElement("div");
@@ -737,135 +920,148 @@ var __yurbaui__ = (() => {
       if (this._triggerClass) trigger.classList.add(...this._triggerClass.split(" ").filter(Boolean));
       trigger.type = "button";
       trigger.innerHTML = this._triggerContent;
-      const menu = document.createElement("div");
-      menu.className = "y-dropdown__menu y-win__hidden";
+      const isOpen = () => this._menu && !this._menu.classList.contains("y-win__hidden");
       const closeRoot = () => {
-        menu.classList.add("y-win__hidden");
-        menu.dispatchEvent(new CustomEvent("yurba-dropdown:close", { bubbles: true }));
-        if (this._onClose) this._onClose(menu);
+        if (!this._menu) return;
+        this._menu.classList.add("y-win__hidden");
+        this._menu.querySelectorAll(".y-dropdown__submenu").forEach((s) => s.classList.add("y-win__hidden"));
+        this._menu.dispatchEvent(new CustomEvent("yurba-dropdown:close", { bubbles: true }));
+        if (this._onClose) this._onClose(this._menu);
+        setTimeout(() => {
+          if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
+            this._menu.remove();
+            this._menuMounted = false;
+          }
+        }, 300);
       };
-      if (this._content !== null) {
-        if (this._content instanceof HTMLElement) {
-          menu.appendChild(this._content);
-        } else if (typeof this._content === "string") {
-          menu.innerHTML = this._content;
+      const initMenu = () => {
+        if (this._menuMounted) return;
+        this._menu = document.createElement("div");
+        this._menu.className = "y-dropdown__menu y-dropdown__menu--portal y-win__hidden";
+        if (this._content !== null) {
+          if (this._content instanceof HTMLElement) {
+            this._menu.appendChild(this._content);
+          } else if (typeof this._content === "string") {
+            this._menu.innerHTML = this._content;
+          }
+        } else {
+          buildMenuItems(this._items, this._menu, closeRoot);
         }
-      } else {
-        this._buildItems(this._items, menu, closeRoot);
-      }
+        document.body.appendChild(this._menu);
+        document.addEventListener("click", (e) => {
+          if (!el.contains(e.target) && !this._menu.contains(e.target)) closeRoot();
+        });
+        const reflow = () => {
+          if (isOpen()) anchorFixed(trigger, this._menu, this._align);
+        };
+        window.addEventListener("scroll", reflow, true);
+        window.addEventListener("resize", reflow);
+        this._menuMounted = true;
+      };
       const open = () => {
-        this._reposition(trigger, menu);
-        menu.classList.remove("y-win__hidden");
-        menu.dispatchEvent(new CustomEvent("yurba-dropdown:open", { bubbles: true }));
-        if (this._onOpen) this._onOpen(menu);
+        initMenu();
+        anchorFixed(trigger, this._menu, this._align);
+        this._menu.classList.remove("y-win__hidden");
+        this._menu.dispatchEvent(new CustomEvent("yurba-dropdown:open", { bubbles: true }));
+        if (this._onOpen) this._onOpen(this._menu);
       };
       trigger.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (!menu.classList.contains("y-win__hidden")) closeRoot();
+        if (isOpen()) closeRoot();
         else open();
       });
-      document.addEventListener("click", (e) => {
-        if (!el.contains(e.target)) closeRoot();
-      });
       el.appendChild(trigger);
-      el.appendChild(menu);
       this.el = el;
-      this.menu = menu;
+      this.menu = this._menu;
       return el;
     }
-    _buildItems(items, container, onCloseAll) {
-      items.forEach((item) => {
-        if (item.separator) {
-          const sep = document.createElement("div");
-          sep.className = "y-dropdown__separator";
-          container.appendChild(sep);
-          return;
-        }
-        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-        const btn = document.createElement("button");
-        btn.className = "y-dropdown__item" + (hasChildren ? " y-dropdown__item--has-children" : "");
-        btn.type = "button";
-        if (item.className) btn.classList.add(...item.className.split(" ").filter(Boolean));
-        btn.innerHTML = `${item.icon ? '<span class="y-dropdown__item-icon">' + item.icon + "</span>" : ""}<span class="y-dropdown__item-label">${item.label}</span>${hasChildren ? '<span class="y-dropdown__item-arrow">\u203A</span>' : ""}`;
-        if (hasChildren) {
-          const wrapper = document.createElement("div");
-          wrapper.className = "y-dropdown__item-wrapper";
-          const submenu = document.createElement("div");
-          submenu.className = "y-dropdown__menu y-dropdown__submenu y-win__hidden";
-          this._buildItems(item.children, submenu, onCloseAll);
-          let hideTimer = null;
-          const showSub = () => {
-            clearTimeout(hideTimer);
-            this._repositionSubmenu(btn, submenu);
-            submenu.classList.remove("y-win__hidden");
-          };
-          const hideSub = () => {
-            hideTimer = setTimeout(() => submenu.classList.add("y-win__hidden"), 80);
-          };
-          btn.addEventListener("mouseenter", showSub);
-          btn.addEventListener("mouseleave", hideSub);
-          submenu.addEventListener("mouseenter", () => clearTimeout(hideTimer));
-          submenu.addEventListener("mouseleave", hideSub);
-          wrapper.appendChild(btn);
-          wrapper.appendChild(submenu);
-          container.appendChild(wrapper);
-        } else {
-          if (item.onClick) {
-            btn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              onCloseAll();
-              item.onClick(e);
-            });
-          }
-          container.appendChild(btn);
-        }
+  };
+
+  // source/components/ContextMenu/index.js
+  var ContextMenuComponent = class extends BaseComponent {
+    constructor(items = [], properties = {}) {
+      super();
+      this._items = items;
+      this._onOpen = properties.onOpen ?? null;
+      this._onClose = properties.onClose ?? null;
+      this._menu = null;
+      this._target = null;
+      this.placement = "body";
+    }
+    bind(target) {
+      let targets;
+      if (typeof target === "string") {
+        targets = [...document.querySelectorAll(target)];
+      } else if (target instanceof NodeList || Array.isArray(target)) {
+        targets = [...target];
+      } else {
+        targets = [target];
+      }
+      targets.forEach((t) => {
+        t.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          this.open(e.clientX, e.clientY, t);
+        });
       });
+      return this;
     }
-    _reposition(trigger, menu) {
-      menu.style.top = "";
-      menu.style.bottom = "";
-      menu.style.left = "";
-      menu.style.right = "";
-      const pad = 8;
-      const tRect = trigger.getBoundingClientRect();
-      const mRect = menu.getBoundingClientRect();
-      if (this._align === "right" || tRect.left + mRect.width > window.innerWidth - pad) {
-        menu.style.left = "auto";
-        menu.style.right = "0";
-      } else {
-        menu.style.left = "0";
-        menu.style.right = "auto";
-      }
-      if (tRect.bottom + mRect.height + 4 > window.innerHeight - pad) {
-        menu.style.top = "auto";
-        menu.style.bottom = "calc(100% + 4px)";
-      } else {
-        menu.style.top = "calc(100% + 4px)";
-        menu.style.bottom = "auto";
-      }
+    open(x, y, target = null) {
+      this.close();
+      const menu = document.createElement("div");
+      menu.className = "y-context-menu y-win__hidden";
+      buildMenuItems(this._items, menu, () => this.close());
+      document.body.appendChild(menu);
+      this._menu = menu;
+      this._target = target;
+      this._position(menu, x, y);
+      requestAnimationFrame(() => menu.classList.remove("y-win__hidden"));
+      this._onOutside = (e) => {
+        if (!menu.contains(e.target)) this.close();
+      };
+      this._onKey = (e) => {
+        if (e.key === "Escape") this.close();
+      };
+      this._onScroll = () => this.close();
+      setTimeout(() => {
+        document.addEventListener("click", this._onOutside);
+        document.addEventListener("contextmenu", this._onOutside);
+        document.addEventListener("keydown", this._onKey);
+        window.addEventListener("scroll", this._onScroll, true);
+      }, 0);
+      if (this._onOpen) this._onOpen(menu, target);
+      return menu;
     }
-    _repositionSubmenu(trigger, submenu) {
-      submenu.style.top = "";
-      submenu.style.bottom = "";
-      submenu.style.left = "";
-      submenu.style.right = "";
+    close() {
+      if (!this._menu) return;
+      document.removeEventListener("click", this._onOutside);
+      document.removeEventListener("contextmenu", this._onOutside);
+      document.removeEventListener("keydown", this._onKey);
+      window.removeEventListener("scroll", this._onScroll, true);
+      const menu = this._menu;
+      const target = this._target;
+      this._menu = null;
+      this._target = null;
+      menu.classList.add("y-win__hidden");
+      setTimeout(() => {
+        if (menu.parentNode) menu.remove();
+        if (this._onClose) this._onClose(target);
+      }, 300);
+    }
+    _position(menu, x, y) {
       const pad = 8;
-      const tRect = trigger.getBoundingClientRect();
-      const mRect = submenu.getBoundingClientRect();
-      if (tRect.right + mRect.width > window.innerWidth - pad) {
-        submenu.style.left = "auto";
-        submenu.style.right = "100%";
-      } else {
-        submenu.style.left = "100%";
-        submenu.style.right = "auto";
-      }
-      if (tRect.top + mRect.height > window.innerHeight - pad) {
-        submenu.style.top = "auto";
-        submenu.style.bottom = "0";
-      } else {
-        submenu.style.top = "0";
-        submenu.style.bottom = "auto";
-      }
+      const mw = menu.offsetWidth;
+      const mh = menu.offsetHeight;
+      let left = x;
+      let top = y;
+      if (left + mw > window.innerWidth - pad) left = x - mw;
+      if (left < pad) left = pad;
+      if (top + mh > window.innerHeight - pad) top = y - mh;
+      if (top < pad) top = pad;
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
+    }
+    isOpen() {
+      return this._menu !== null;
     }
   };
 
@@ -874,6 +1070,7 @@ var __yurbaui__ = (() => {
     Modal,
     Select: SelectComponent,
     Dropdown: DropdownComponent,
+    ContextMenu: ContextMenuComponent,
     Tooltip,
     Toast,
     Title: TitleComponent,

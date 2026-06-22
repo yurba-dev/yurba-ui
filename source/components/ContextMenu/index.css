@@ -1,0 +1,19 @@
+.y-context-menu {
+    position: fixed;
+    min-width: 180px;
+    background: var(--y-win-bg);
+    border: 1px solid var(--y-win-divider);
+    border-radius: var(--y-win-border-radius);
+    box-shadow: #0000001c 0 5px 20px;
+    z-index: 10000;
+    padding: 4px;
+    opacity: 1;
+    transform: scale(1);
+    transition: .12s ease;
+}
+
+.y-context-menu.y-win__hidden {
+    opacity: 0;
+    transform: scale(.98);
+    pointer-events: none;
+}

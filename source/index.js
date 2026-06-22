@@ -4,6 +4,7 @@ const YurbaUI = {
     Modal: YW.Modal,
     Select: YW.SelectComponent,
     Dropdown: YW.DropdownComponent,
+    ContextMenu: YW.ContextMenuComponent,
     Tooltip: YW.Tooltip,
     Toast: YW.Toast,
     Title: YW.TitleComponent,

@@ -26,6 +26,14 @@
     pointer-events: auto;
 }
 
+.y-dropdown__menu--portal {
+    position: fixed;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+}
+
 .y-dropdown__item-wrapper {
     position: relative;
 }

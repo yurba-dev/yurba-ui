@@ -356,6 +356,22 @@ button.demo-btn.secondary:hover {
     cursor: default;
 }
 
+.context-target {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6e6e73;
+    background: #f2f2f7;
+    border: 1.5px dashed #c7c7cc;
+    border-radius: 10px;
+    cursor: context-menu;
+    user-select: none;
+    width: 100%;
+}
+
 .log-wrap {
     max-width: 960px;
     width: 100%;

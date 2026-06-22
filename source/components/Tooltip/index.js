@@ -17,27 +17,22 @@ export class Tooltip {
         this.tooltip = null
         this.showTimeout = null
         this.hideTimeout = null
+        this._mounted = false
 
         this._init()
     }
 
     _init() {
-        this._createTooltip()
-
         this.target.addEventListener("mouseenter", () => this._scheduleShow())
         this.target.addEventListener("mouseleave", () => this._scheduleHide())
-
-        this.tooltip.addEventListener("mouseenter", () => this._clearHide())
-        this.tooltip.addEventListener("mouseleave", () => this._scheduleHide())
     }
 
     _createTooltip() {
+        if (this._mounted) return
+
         const tooltip = document.createElement("div")
-        tooltip.style.display = "none"
         tooltip.classList.add("y-tooltip", "y-win__hidden")
         if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean))
-
-        setTimeout(() => { tooltip.style.display = "" }, 100)
 
         let header = ""
 
@@ -60,7 +55,12 @@ export class Tooltip {
         `
 
         document.body.appendChild(tooltip)
+
+        tooltip.addEventListener("mouseenter", () => this._clearHide())
+        tooltip.addEventListener("mouseleave", () => this._scheduleHide())
+
         this.tooltip = tooltip
+        this._mounted = true
     }
 
     _scheduleShow() {
@@ -88,9 +88,8 @@ export class Tooltip {
     }
 
     show() {
+        this._createTooltip()
         const offset = this.props.offset
-
-        this.tooltip.classList.remove("y-win__hidden")
 
         const rect = this.target.getBoundingClientRect()
         const tRect = this.tooltip.getBoundingClientRect()
@@ -132,9 +131,21 @@ export class Tooltip {
 
         this.tooltip.style.top = `${top + window.scrollY}px`
         this.tooltip.style.left = `${left + window.scrollX}px`
+
+        void this.tooltip.offsetWidth
+        requestAnimationFrame(() => {
+            if (this.tooltip) this.tooltip.classList.remove("y-win__hidden")
+        })
     }
 
     hide() {
+        if (!this.tooltip) return
         this.tooltip.classList.add("y-win__hidden")
+        setTimeout(() => {
+            if (this.tooltip && this.tooltip.classList.contains("y-win__hidden")) {
+                this.tooltip.remove()
+                this._mounted = false
+            }
+        }, 300)
     }
 }

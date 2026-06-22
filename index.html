@@ -26,6 +26,7 @@
                 <button class="tab-btn" data-tab="tab-tooltip">Tooltip</button>
                 <button class="tab-btn" data-tab="tab-select">Select</button>
                 <button class="tab-btn" data-tab="tab-dropdown">Dropdown</button>
+                <button class="tab-btn" data-tab="tab-context">Context Menu</button>
                 <button class="tab-btn" data-tab="tab-other">Other</button>
             </nav>
         </div>
@@ -68,6 +69,24 @@
                                 <td><code>document.body</code></td>
                                 <td>DOM element the modal is appended to.</td>
                             </tr>
+                            <tr>
+                                <td><code>components</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">array</span></td>
+                                <td><code>null</code></td>
+                                <td>Array of components to render. Format: <code>{ content: Component, area: 'header'|'body'|'footer'|'controls' }</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>closeOnOutsideClick</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">boolean</span></td>
+                                <td><code>true</code></td>
+                                <td>Close modal when clicking outside of it.</td>
+                            </tr>
+                            <tr>
+                                <td><code>onClose</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">function</span></td>
+                                <td><code>null</code></td>
+                                <td>Called when the user dismisses the modal (close button or outside click).</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -87,9 +106,9 @@
                     <tbody>
                         <tr>
                             <td><code>renderComponent(component, placement?)</code></td>
-                            <td><code>component</code> — BaseComponent<br><code>placement</code> — <code>'body'</code> | <code>'header'</code> | <code>'footer'</code> | <code>'controls'</code></td>
+                            <td><code>component</code> — BaseComponent | HTMLElement<br><code>placement</code> — <code>'body'</code> | <code>'header'</code> | <code>'footer'</code> | <code>'controls'</code></td>
                             <td><span class="type-badge">HTMLElement</span></td>
-                            <td>Renders a component into the specified placement. Defaults to <code>'body'</code>.</td>
+                            <td>Renders a component into the specified placement (defaults to <code>'body'</code>). It is recorded and replayed every time the modal reopens.</td>
                         </tr>
                         <tr>
                             <td><code>show()</code></td>
@@ -101,7 +120,7 @@
                             <td><code>hide()</code></td>
                             <td>—</td>
                             <td><span class="type-badge">void</span></td>
-                            <td>Hides the modal without removing it from the DOM.</td>
+                            <td>Hides the modal; it is removed from the DOM after the close animation and rebuilt from its recorded components on the next <code>show()</code>.</td>
                         </tr>
                         <tr>
                             <td><code>remove()</code></td>
@@ -126,12 +145,6 @@
                             <td><code>pos</code> — string</td>
                             <td><span class="type-badge">void</span></td>
                             <td>Sets modal position class. Used by <code>YurbaUI.Toast</code> for corner positioning.</td>
-                        </tr>
-                        <tr>
-                            <td><code>closeOnOutsideClick()</code></td>
-                            <td>—</td>
-                            <td><span class="type-badge">void</span></td>
-                            <td>Hides the modal when the user clicks outside the window.</td>
                         </tr>
                         <tr>
                             <td><code>hideOnTimeout(ms, opts?)</code></td>
@@ -163,7 +176,7 @@
                         <tr>
                             <td><code>modal.modalBody</code></td>
                             <td><span class="type-badge">HTMLElement</span></td>
-                            <td>Main content area. Append custom elements directly if needed.</td>
+                            <td>Main content area (available only while shown). Prefer the <code>components</code> option or <code>renderComponent()</code> so content is restored when the modal reopens.</td>
                         </tr>
                         <tr>
                             <td><code>modal.modalHeader</code></td>
@@ -196,10 +209,13 @@
                     <div class="demo-card">
                         <div class="demo-card-body">
                             <div class="demo-card-title">Basic modal</div>
-                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
-modal.renderComponent(new YurbaUI.Title('Hello World'))
-modal.renderComponent(new YurbaUI.Description('A simple modal window'))
-modal.renderComponent(new YurbaUI.Text('Body text with &lt;b&gt;HTML&lt;/b&gt; support.'))
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('Hello World'), area: 'header' },
+        { content: new YurbaUI.Description('A simple modal window'), area: 'body' },
+        { content: new YurbaUI.Text('Body text with &lt;b&gt;HTML&lt;/b&gt; support.'), area: 'body' }
+    ]
+})
 modal.show()</code></pre>
                             <div class="demo-card-actions">
                                 <button class="demo-btn" id="btn-basic">Open</button>
@@ -210,15 +226,18 @@ modal.show()</code></pre>
                     <div class="demo-card">
                         <div class="demo-card-body">
                             <div class="demo-card-title">With footer button</div>
-                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
-modal.renderComponent(new YurbaUI.Title('With footer'))
-modal.renderComponent(new YurbaUI.Text('This modal has an action bar at the bottom.'))
-
-const closeBtn = new YurbaUI.IconButton(
+                            <pre><code class="language-javascript">const closeBtn = new YurbaUI.IconButton(
     { icon: '&lt;span class="material-symbols-rounded"&gt;close&lt;/span&gt;', name: 'Dismiss' },
     () =&gt; modal.hide()
 )
-modal.renderComponent(closeBtn, 'footer')
+
+const modal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('With footer'), area: 'header' },
+        { content: new YurbaUI.Text('This modal has an action bar at the bottom.'), area: 'body' },
+        { content: closeBtn, area: 'footer' }
+    ]
+})
 modal.show()</code></pre>
                             <div class="demo-card-actions">
                                 <button class="demo-btn" id="btn-footer">Open</button>
@@ -228,11 +247,14 @@ modal.show()</code></pre>
 
                     <div class="demo-card">
                         <div class="demo-card-body">
-                            <div class="demo-card-title">Close on outside click</div>
-                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
-modal.renderComponent(new YurbaUI.Title('Click outside to close'))
-modal.renderComponent(new YurbaUI.Text('Click anywhere outside this window to dismiss it.'))
-modal.closeOnOutsideClick()
+                            <div class="demo-card-title">Persist on outside click</div>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal({
+    closeOnOutsideClick: false,
+    components: [
+        { content: new YurbaUI.Title('Persists when clicking outside'), area: 'header' },
+        { content: new YurbaUI.Text('This modal will NOT close when you click outside.'), area: 'body' }
+    ]
+})
 modal.show()</code></pre>
                             <div class="demo-card-actions">
                                 <button class="demo-btn" id="btn-outside">Open</button>
@@ -256,9 +278,13 @@ modal.show()</code></pre>
                     <div class="demo-card">
                         <div class="demo-card-body">
                             <div class="demo-card-title">Attribute binding — <code>bind(name)</code></div>
-                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal()
-modal.renderComponent(new YurbaUI.Title('Bound modal'))
-modal.bind('my-modal')</code></pre>
+                            <pre><code class="language-javascript">const modal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('Bound modal'), area: 'header' },
+        { content: new YurbaUI.Text('Opened via <code>y-win</code> attribute.'), area: 'body' }
+    ]
+})
+modal.bind('bound-modal')</code></pre>
                             <pre><code class="language-html">&lt;button y-win="my-modal"&gt;Open&lt;/button&gt;</code></pre>
                             <div class="demo-card-actions">
                                 <button class="demo-btn secondary" y-win="bound-modal">Open via attribute</button>
@@ -821,9 +847,19 @@ container.appendChild(select.render())</code></pre>
                             <td>When <code>true</code>, renders a horizontal divider instead of a button.</td>
                         </tr>
                         <tr>
+                            <td><code>children</code></td>
+                            <td><span class="type-badge">array</span></td>
+                            <td>Nested item array. The item becomes a parent that opens a submenu on hover.</td>
+                        </tr>
+                        <tr>
+                            <td><code>submenu</code></td>
+                            <td><span class="type-badge">HTMLElement</span> | <span class="type-badge">string</span></td>
+                            <td>Custom HTML rendered inside the submenu instead of nested items. Use for inline controls (e.g. a date picker). Combine with <code>onClick</code> to also make the parent itself actionable.</td>
+                        </tr>
+                        <tr>
                             <td><code>onClick</code></td>
                             <td><span class="type-badge">function</span></td>
-                            <td>Click handler called when the item is selected.</td>
+                            <td>Click handler called when the item is selected. Works on leaf and parent items alike.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -901,6 +937,45 @@ container.appendChild(select.render())</code></pre>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Events</div>
+                <div class="gap-stack">
+                    <p class="note">The dropdown dispatches bubbling <code>CustomEvent</code>s on its menu element (<code>dropdown.menu</code>). Listen with <code>addEventListener</code>, or use the <code>onOpen</code> / <code>onClose</code> options for a callback equivalent.</p>
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Fires on</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>yurba-dropdown:open</code></td>
+                                <td><code>dropdown.menu</code></td>
+                                <td>The panel became visible.</td>
+                            </tr>
+                            <tr>
+                                <td><code>yurba-dropdown:close</code></td>
+                                <td><code>dropdown.menu</code></td>
+                                <td>The panel was hidden (item click, trigger toggle, or outside click).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const dropdown = new YurbaUI.Dropdown(items, { trigger: '...' })
+container.appendChild(dropdown.render())
+
+dropdown.menu.addEventListener('yurba-dropdown:open', () =&gt; {
+    console.log('opened')
+})
+dropdown.menu.addEventListener('yurba-dropdown:close', () =&gt; {
+    console.log('closed')
+})</code></pre>
+                    </div>
+                </div>
             </div>
 
             <div class="doc-section">
@@ -982,6 +1057,214 @@ dropdown.menu.addEventListener('yurba-dropdown:open', () => {
 container.appendChild(dropdown.el)</code></pre>
                             <div class="demo-card-actions">
                                 <div id="demo-dropdown-custom"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-panel" id="tab-context">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.ContextMenu</h2>
+                <p class="doc-component-desc">Right-click context menu built on the same item model as <strong>Dropdown</strong> — icons, separators, callbacks, and nested submenus. Opens at the cursor with <code>position: fixed</code>, repositions near screen edges, and closes on outside click, scroll, or <kbd>Esc</kbd>. Bind it to any element (or selector) via <code>bind()</code>, or open it manually at coordinates with <code>open(x, y)</code>.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const menu = new YurbaUI.ContextMenu(items[], options?)</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Item shape</div>
+                <p class="note">Identical to <code>YurbaUI.Dropdown</code> items — <code>label</code>, <code>icon</code>, <code>className</code>, <code>separator</code>, <code>onClick</code>, and <code>children[]</code> for nested submenus.</p>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>label</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>Item text. Not needed when <code>separator: true</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>icon</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>Raw HTML icon string shown before the label.</td>
+                        </tr>
+                        <tr>
+                            <td><code>className</code></td>
+                            <td><span class="type-badge">string</span></td>
+                            <td>CSS classes added to the item <code>&lt;button&gt;</code>. Use <code>'text-danger'</code> for destructive actions.</td>
+                        </tr>
+                        <tr>
+                            <td><code>separator</code></td>
+                            <td><span class="type-badge">boolean</span></td>
+                            <td>Renders a horizontal divider instead of a button.</td>
+                        </tr>
+                        <tr>
+                            <td><code>children</code></td>
+                            <td><span class="type-badge">array</span></td>
+                            <td>Nested item array. Opens as a submenu on hover.</td>
+                        </tr>
+                        <tr>
+                            <td><code>submenu</code></td>
+                            <td><span class="type-badge">HTMLElement</span> | <span class="type-badge">string</span></td>
+                            <td>Custom HTML rendered inside the submenu instead of nested items.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClick</code></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>Click handler. The menu closes automatically after it runs.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Options</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>onOpen</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>Called when the menu opens. Receives <code>(menuEl, target)</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>onClose</code> <span class="optional-badge">optional</span></td>
+                            <td><span class="type-badge">function</span></td>
+                            <td>Called when the menu closes. Receives <code>(target)</code>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Params</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>bind(target)</code></td>
+                            <td><code>target</code> — HTMLElement | NodeList | Array | CSS selector string</td>
+                            <td><span class="type-badge">this</span></td>
+                            <td>Attaches a <code>contextmenu</code> (right-click) handler to one or many elements.</td>
+                        </tr>
+                        <tr>
+                            <td><code>open(x, y, target?)</code></td>
+                            <td><code>x</code>, <code>y</code> — viewport coordinates</td>
+                            <td><span class="type-badge">HTMLElement</span></td>
+                            <td>Opens the menu manually at the given coordinates. Returns the menu element.</td>
+                        </tr>
+                        <tr>
+                            <td><code>close()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">void</span></td>
+                            <td>Closes the menu and removes it from the DOM.</td>
+                        </tr>
+                        <tr>
+                            <td><code>isOpen()</code></td>
+                            <td>—</td>
+                            <td><span class="type-badge">boolean</span></td>
+                            <td>Returns <code>true</code> while the menu is visible.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-grid">
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Right-click target — <code>bind()</code></div>
+                            <pre><code class="language-javascript">const menu = new YurbaUI.ContextMenu([
+    { label: 'Open',   icon: '&lt;span class="material-symbols-rounded"&gt;open_in_new&lt;/span&gt;', onClick: () =&gt; {} },
+    { label: 'Rename', icon: '&lt;span class="material-symbols-rounded"&gt;edit&lt;/span&gt;',        onClick: () =&gt; {} },
+    { separator: true },
+    { label: 'Delete', icon: '&lt;span class="material-symbols-rounded"&gt;delete&lt;/span&gt;', className: 'text-danger', onClick: () =&gt; {} },
+])
+menu.bind('#context-target')</code></pre>
+                            <div class="demo-card-actions">
+                                <div class="context-target" id="context-target">Right-click here</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Nested submenus</div>
+                            <pre><code class="language-javascript">const menu = new YurbaUI.ContextMenu([
+    { label: 'Cut',  icon: '...', onClick: () =&gt; {} },
+    { label: 'Copy', icon: '...', onClick: () =&gt; {} },
+    {
+        label: 'Share',
+        icon: '...',
+        children: [
+            { label: 'Copy link', icon: '...', onClick: () =&gt; {} },
+            {
+                label: 'Send to',
+                icon: '...',
+                children: [
+                    { label: 'Message', onClick: () =&gt; {} },
+                    { label: 'Email',   onClick: () =&gt; {} },
+                ]
+            },
+        ]
+    },
+    { separator: true },
+    { label: 'Delete', className: 'text-danger', onClick: () =&gt; {} },
+])
+menu.bind('#context-target-nested')</code></pre>
+                            <div class="demo-card-actions">
+                                <div class="context-target" id="context-target-nested">Right-click here</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-card">
+                        <div class="demo-card-body">
+                            <div class="demo-card-title">Open manually at coordinates — <code>open(x, y)</code></div>
+                            <pre><code class="language-javascript">const menu = new YurbaUI.ContextMenu([
+    { label: 'Profile',  icon: '...', onClick: () =&gt; {} },
+    { label: 'Settings', icon: '...', onClick: () =&gt; {} },
+    { separator: true },
+    { label: 'Log out',  icon: '...', className: 'text-danger', onClick: () =&gt; {} },
+])
+
+button.addEventListener('click', (e) =&gt; {
+    const r = e.currentTarget.getBoundingClientRect()
+    menu.open(r.left, r.bottom)
+})</code></pre>
+                            <div class="demo-card-actions">
+                                <button class="demo-btn" id="btn-context-manual">Open menu</button>
                             </div>
                         </div>
                     </div>

@@ -63,6 +63,15 @@
     overflow-y: auto;
 }
 
+.y-select__menu--portal {
+    position: fixed;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    min-width: 0;
+}
+
 .y-select__item {
     all: unset;
     display: flex;

@@ -1,6 +1,6 @@
 # YurbaUI
 
-Modal windows, tooltips, toasts, selects and dropdowns for Yurba.
+Modal windows, tooltips, toasts, selects, dropdowns and context menus for Yurba.
 
 ## Installation
 
@@ -32,7 +32,8 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 | `YurbaUI.Toast` | Toast notification (extends Modal) |
 | `YurbaUI.Tooltip` | Hover tooltip |
 | `YurbaUI.Select` | Dropdown select (single or multi) |
-| `YurbaUI.Dropdown` | Context menu or custom panel |
+| `YurbaUI.Dropdown` | Trigger-anchored menu or custom panel (icons, separators, nested submenus) |
+| `YurbaUI.ContextMenu` | Right-click menu opened at the cursor (same item model as Dropdown) |
 | `YurbaUI.Group` | Component group |
 | `YurbaUI.Title` | Title component |
 | `YurbaUI.Description` | Subtitle component |
@@ -46,10 +47,23 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 ## Examples
 
 ```js
-// Modal
+// Modal - with components array
+const modal = new YurbaUI.Modal({
+    size: 'large',
+    components: [
+        { content: new YurbaUI.Title('Hello'), area: 'header' },
+        { content: new YurbaUI.Text('Body text'), area: 'body' }
+    ]
+})
+
+modal.show()
+
+// Modal - using renderComponent
 const modal = new YurbaUI.Modal({ size: 'large' })
-modal.renderComponent(new YurbaUI.Title('Hello'))
-modal.renderComponent(new YurbaUI.Text('Body text'))
+
+modal.renderComponent(new YurbaUI.Title('Hello'), 'header')
+modal.renderComponent(new YurbaUI.Text('Body text'), 'body')
+
 modal.show()
 
 // Toast
@@ -69,6 +83,15 @@ const dropdown = new YurbaUI.Dropdown(
     { trigger: '<span class="material-symbols-rounded">more_vert</span>' }
 )
 container.appendChild(dropdown.render())
+
+// Context menu (right-click)
+const menu = new YurbaUI.ContextMenu([
+    { label: 'Open',   icon: '...', onClick: () => {} },
+    { separator: true },
+    { label: 'Delete', icon: '...', className: 'text-danger', onClick: () => {} },
+])
+menu.bind('#target')        // or bind(element / NodeList / array)
+// menu.open(x, y)          // open manually at coordinates
 ```
 
 See [demo](https://yurba-dev.github.io/yurba-ui/) for full documentation with parameter tables and examples for every component.

@@ -7,9 +7,13 @@ export class Toast extends Modal {
     constructor(properties = {}) {
         super()
         this.type = "toast"
-        this.modal.setAttribute("type", "toast")
-        this.modal.style.setProperty('--y-win-body-padding', '5px 10px 15px 15px')
-        this.modal.style.setProperty('--y-win-header-padding', '10px')
+        this._timeout = properties.timeout ?? 2000
+
+        this._addSetupHook(modal => {
+            modal.setAttribute("type", "toast")
+            modal.style.setProperty('--y-win-body-padding', '5px 10px 15px 15px')
+            modal.style.setProperty('--y-win-header-padding', '10px')
+        })
 
         const title = new TitleComponent(properties.title ?? "Untitled")
 
@@ -21,7 +25,10 @@ export class Toast extends Modal {
         } else {
             this.renderComponent(title, "header")
         }
+    }
 
-        this.hideOnTimeout(properties.timeout ?? 2000, { notHideWhenHovered: true })
+    show() {
+        super.show()
+        this.hideOnTimeout(this._timeout, { notHideWhenHovered: true })
     }
 }

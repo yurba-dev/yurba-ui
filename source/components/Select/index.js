@@ -1,4 +1,5 @@
 import { BaseComponent } from "../../helpers/lib.js"
+import { anchorFixed } from "../../helpers/menu.js"
 
 export class SelectComponent extends BaseComponent {
     constructor(options = [], properties = {}) {
@@ -8,6 +9,9 @@ export class SelectComponent extends BaseComponent {
         this._placeholder = properties.placeholder ?? "Select..."
         this._changeHandlers = []
         this.placement = "body"
+        this._menuMounted = false
+        this._menu = null
+        this._trigger = null
 
         if (this._multiple) {
             this._values = Array.isArray(properties.values) ? [...properties.values] : []
@@ -24,60 +28,64 @@ export class SelectComponent extends BaseComponent {
         this._trigger.className = "y-select__trigger"
         this._trigger.type = "button"
 
-        this._menu = document.createElement("div")
-        this._menu.className = "y-select__menu y-win__hidden"
-
         this._syncTrigger()
-        this._renderMenu()
 
-        el.appendChild(this._trigger)
-        el.appendChild(this._menu)
+        const initMenu = () => {
+            if (this._menuMounted) return
+
+            this._menu = document.createElement("div")
+            this._menu.className = "y-select__menu y-select__menu--portal y-win__hidden"
+
+            this._renderMenu()
+
+            document.addEventListener("click", (e) => {
+                if (!el.contains(e.target) && !this._menu.contains(e.target)) {
+                    this._menu.classList.add("y-win__hidden")
+                }
+            })
+
+            const reflow = () => {
+                if (!this._menu.classList.contains("y-win__hidden")) this._reposition()
+            }
+            window.addEventListener("scroll", reflow, true)
+            window.addEventListener("resize", reflow)
+
+            document.body.appendChild(this._menu)
+            this._menuMounted = true
+        }
 
         this._trigger.addEventListener("click", (e) => {
             e.stopPropagation()
+            initMenu()
             const closing = !this._menu.classList.contains("y-win__hidden")
             this._menu.classList.add("y-win__hidden")
             if (!closing) {
                 this._reposition()
                 this._menu.classList.remove("y-win__hidden")
+            } else {
+                setTimeout(() => {
+                    if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
+                        this._menu.remove()
+                        this._menuMounted = false
+                    }
+                }, 300)
             }
         })
 
-        document.addEventListener("click", () => this._menu.classList.add("y-win__hidden"))
+        el.appendChild(this._trigger)
 
         this.el = el
         return el
     }
 
     _reposition() {
-        const menu = this._menu
-        menu.style.top = ""
-        menu.style.bottom = ""
-        menu.style.left = ""
-        menu.style.right = ""
-
-        const pad = 8
-        const tRect = this._trigger.getBoundingClientRect()
-        const mRect = menu.getBoundingClientRect()
-
-        if (tRect.left + mRect.width > window.innerWidth - pad) {
-            menu.style.left = "auto"
-            menu.style.right = "0"
-        } else {
-            menu.style.left = "0"
-            menu.style.right = "auto"
-        }
-
-        if (tRect.bottom + mRect.height + 4 > window.innerHeight - pad) {
-            menu.style.top = "auto"
-            menu.style.bottom = "calc(100% + 4px)"
-        } else {
-            menu.style.top = "calc(100% + 4px)"
-            menu.style.bottom = "auto"
-        }
+        if (!this._menu) return
+        this._menu.style.minWidth = this._trigger.getBoundingClientRect().width + "px"
+        anchorFixed(this._trigger, this._menu, "left")
     }
 
     _syncTrigger() {
+        if (!this._trigger) return
         const arrow = `<span class="y-select__arrow"><svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
 
         if (this._multiple) {
@@ -104,6 +112,7 @@ export class SelectComponent extends BaseComponent {
     }
 
     _renderMenu() {
+        if (!this._menu) return
         this._menu.innerHTML = ""
         this._options.forEach(opt => {
             const isActive = this._multiple
@@ -135,6 +144,13 @@ export class SelectComponent extends BaseComponent {
                     this._renderMenu()
                     this._menu.classList.add("y-win__hidden")
                     this._changeHandlers.forEach(cb => cb(opt.value, opt))
+
+                    setTimeout(() => {
+                        if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
+                            this._menu.remove()
+                            this._menuMounted = false
+                        }
+                    }, 300)
                 }
             })
 
@@ -153,7 +169,7 @@ export class SelectComponent extends BaseComponent {
             this._value = value
         }
         this._syncTrigger()
-        this._renderMenu()
+        if (this._menuMounted) this._renderMenu()
         return this
     }
 

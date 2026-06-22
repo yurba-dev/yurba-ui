@@ -20,34 +20,44 @@ function log(msg) {
     logEl.scrollTop = logEl.scrollHeight
 }
 
-const basicModal = new YurbaUI.Modal()
-basicModal.renderComponent(new YurbaUI.Title('Hello World'))
-basicModal.renderComponent(new YurbaUI.Description('A simple modal window'))
-basicModal.renderComponent(new YurbaUI.Text(
-    'This is the body text rendered via <b>YurbaUI.Text</b>. ' +
-    'You can put any HTML content here.'
-))
+const basicModal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('Hello World'), area: 'header' },
+        { content: new YurbaUI.Description('A simple modal window'), area: 'body' },
+        { content: new YurbaUI.Text(
+            'This is the body text rendered via <b>YurbaUI.Text</b>. ' +
+            'You can put any HTML content here.'
+        ), area: 'body' }
+    ]
+})
 document.getElementById('btn-basic').addEventListener('click', () => {
     basicModal.show()
     log('basicModal.show()')
 })
 
-const footerModal = new YurbaUI.Modal()
-footerModal.renderComponent(new YurbaUI.Title('With footer'))
-footerModal.renderComponent(new YurbaUI.Text('This modal has an action bar at the bottom.'))
-footerModal.renderComponent(new YurbaUI.IconButton(
+const footerCloseBtn = new YurbaUI.IconButton(
     { icon: '<span class="material-symbols-rounded">close</span>', name: 'Dismiss' },
     () => { footerModal.hide(); log('footerModal.hide()') }
-), 'footer')
+)
+const footerModal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('With footer'), area: 'header' },
+        { content: new YurbaUI.Text('This modal has an action bar at the bottom.'), area: 'body' },
+        { content: footerCloseBtn, area: 'footer' }
+    ]
+})
 document.getElementById('btn-footer').addEventListener('click', () => {
     footerModal.show()
     log('footerModal.show()')
 })
 
-const outsideModal = new YurbaUI.Modal()
-outsideModal.renderComponent(new YurbaUI.Title('Click outside to close'))
-outsideModal.renderComponent(new YurbaUI.Text('Click anywhere outside this window to dismiss it.'))
-outsideModal.closeOnOutsideClick()
+const outsideModal = new YurbaUI.Modal({
+    closeOnOutsideClick: false,
+    components: [
+        { content: new YurbaUI.Title('Click outside to close'), area: 'header' },
+        { content: new YurbaUI.Text('Click anywhere outside this window to dismiss it.'), area: 'body' }
+    ]
+})
 document.getElementById('btn-outside').addEventListener('click', () => {
     outsideModal.show()
     log('outsideModal.show()')
@@ -55,10 +65,14 @@ document.getElementById('btn-outside').addEventListener('click', () => {
 
 const sizes = ['nano', 'small', 'default', 'medium', 'large', 'giant', 'full']
 let currentSize = 'default'
-const sizeModal = new YurbaUI.Modal()
-sizeModal.renderComponent(new YurbaUI.Title('Sizes'))
 const sizePicker = document.createElement('div')
 sizePicker.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:4px 0'
+const sizeModal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('Sizes'), area: 'header' },
+        { content: sizePicker, area: 'body' }
+    ]
+})
 sizes.forEach(s => {
     const chip = document.createElement('button')
     chip.textContent = s
@@ -77,17 +91,17 @@ sizes.forEach(s => {
     })
     sizePicker.appendChild(chip)
 })
-const sizeBodyComp = new YurbaUI.Text('')
-sizeModal.renderComponent(sizeBodyComp)
-sizeBodyComp.el.replaceWith(sizePicker)
 document.getElementById('btn-sizes').addEventListener('click', () => {
     sizeModal.show()
     log('sizeModal.show()')
 })
 
-const boundModal = new YurbaUI.Modal()
-boundModal.renderComponent(new YurbaUI.Title('Bound modal'))
-boundModal.renderComponent(new YurbaUI.Text('Opened via <code>y-win="bound-modal"</code> attribute.'))
+const boundModal = new YurbaUI.Modal({
+    components: [
+        { content: new YurbaUI.Title('Bound modal'), area: 'header' },
+        { content: new YurbaUI.Text('Opened via <code>y-win="bound-modal"</code> attribute.'), area: 'body' }
+    ]
+})
 boundModal.bind('bound-modal')
 
 document.getElementById('btn-toast-default').addEventListener('click', () => {
@@ -197,6 +211,50 @@ const demoDropdownCustom = new YurbaUI.Dropdown([], {
         demoDropdownPanel.innerHTML = '<p style="margin:0;font-weight:600;font-size:14px">Notifications</p><p style="margin:8px 0 0;opacity:.5;font-size:13px">No new notifications</p>'
     },
 })
-demoDropdownCustom.render()
-demoDropdownCustom.menu.addEventListener('yurba-dropdown:open', () => {})
-document.getElementById('demo-dropdown-custom').appendChild(demoDropdownCustom.el)
+document.getElementById('demo-dropdown-custom').appendChild(demoDropdownCustom.render())
+
+const demoContext = new YurbaUI.ContextMenu([
+    { label: 'Open',   icon: '<span class="material-symbols-rounded">open_in_new</span>', onClick: () => log('context → Open') },
+    { label: 'Rename', icon: '<span class="material-symbols-rounded">edit</span>',        onClick: () => log('context → Rename') },
+    { separator: true },
+    { label: 'Delete', icon: '<span class="material-symbols-rounded">delete</span>', className: 'text-danger', onClick: () => log('context → Delete') },
+], {
+    onOpen: () => log('contextMenu → opened'),
+    onClose: () => log('contextMenu → closed'),
+})
+demoContext.bind('#context-target')
+
+const demoContextNested = new YurbaUI.ContextMenu([
+    { label: 'Cut',  icon: '<span class="material-symbols-rounded">content_cut</span>',  onClick: () => log('context → Cut') },
+    { label: 'Copy', icon: '<span class="material-symbols-rounded">content_copy</span>', onClick: () => log('context → Copy') },
+    {
+        label: 'Share',
+        icon: '<span class="material-symbols-rounded">share</span>',
+        children: [
+            { label: 'Copy link', icon: '<span class="material-symbols-rounded">link</span>', onClick: () => log('context → Copy link') },
+            {
+                label: 'Send to',
+                icon: '<span class="material-symbols-rounded">send</span>',
+                children: [
+                    { label: 'Message', icon: '<span class="material-symbols-rounded">chat</span>', onClick: () => log('context → Send → Message') },
+                    { label: 'Email',   icon: '<span class="material-symbols-rounded">mail</span>', onClick: () => log('context → Send → Email') },
+                ],
+            },
+        ],
+    },
+    { separator: true },
+    { label: 'Delete', icon: '<span class="material-symbols-rounded">delete</span>', className: 'text-danger', onClick: () => log('context → Delete') },
+])
+demoContextNested.bind('#context-target-nested')
+
+const demoContextManual = new YurbaUI.ContextMenu([
+    { label: 'Profile',  icon: '<span class="material-symbols-rounded">person</span>',   onClick: () => log('context → Profile') },
+    { label: 'Settings', icon: '<span class="material-symbols-rounded">settings</span>', onClick: () => log('context → Settings') },
+    { separator: true },
+    { label: 'Log out',  icon: '<span class="material-symbols-rounded">logout</span>', className: 'text-danger', onClick: () => log('context → Log out') },
+])
+document.getElementById('btn-context-manual').addEventListener('click', (e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    demoContextManual.open(r.left, r.bottom + 4)
+    log('contextMenu.open(x, y)')
+})

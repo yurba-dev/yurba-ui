@@ -6,10 +6,38 @@ export class Modal {
     constructor(properties = {}) {
         const size = "size" in properties ? properties.size : "default"
         this.size = size
+        this._properties = properties
+        this._mounted = false
+        this._outsideClickEnabled = properties.closeOnOutsideClick ?? true
+        this._onClose = properties.onClose ?? null
+
+        this._renderQueue = []
+        this._setupHooks = []
+
+        if (Array.isArray(properties.components)) {
+            properties.components.forEach(c => this._renderQueue.push({ component: c.content, placement: c.area }))
+        }
+
+        this.modal = null
+        this.modalHeader = null
+        this.modalControls = null
+        this.modalBody = null
+        this.modalFooter = null
+        this.modalFooterBody = null
+        this.modalClose = null
+
+        this.type = "modal"
+        this.showed = false
+
+        UIElements.push(this)
+        this.#bindYModalAttributes()
+    }
+
+    #initModal() {
+        if (this._mounted) return
 
         this.modal = document.createElement("div")
-        this.modal.style.display = "none"
-        this.modal.classList.add("y-win__wrapper", "y-win__hidden", size)
+        this.modal.classList.add("y-win__wrapper", "y-win__hidden", this.size)
         this.modal.innerHTML = `
             <div class="y-win">
                 <div class="y-win__header">
@@ -30,11 +58,9 @@ export class Modal {
             </div>
         `
 
-        setTimeout(() => { this.modal.style.display = "" }, 100)
-
-        if ("parent" in properties) {
-            if (properties.parent instanceof HTMLElement) {
-                properties.parent.appendChild(this.modal)
+        if ("parent" in this._properties) {
+            if (this._properties.parent instanceof HTMLElement) {
+                this._properties.parent.appendChild(this.modal)
             } else {
                 error("properties.parent must be an HTML element")
             }
@@ -49,17 +75,29 @@ export class Modal {
         this.modalFooterBody = this.modal.querySelector(".y-win__footer")
         this.modalClose = this.modal.querySelector("#close")
 
-        this.#bindYModalAttributes()
+        this.modalClose.addEventListener("click", () => { this.hide(); this.#fireClose() })
+        this._mounted = true
 
-        this.type = "modal"
-        this.showed = false
-
-        UIElements.push(this)
-
-        this.modalClose.addEventListener("click", () => { this.hide() })
+        this._setupHooks.forEach(fn => fn(this.modal))
+        this._renderQueue.forEach(({ component, placement }) => this.#mount(component, placement))
     }
 
     renderComponent(component, customPlacement) {
+        this._renderQueue.push({ component, placement: customPlacement })
+
+        if (this._mounted) {
+            return this.#mount(component, customPlacement)
+        }
+
+        if (component instanceof HTMLElement) return component
+        if (!(component instanceof BaseComponent)) {
+            error("The component must inherit from BaseComponent or be an HTMLElement", "component")
+        }
+        if (customPlacement) component.placement = customPlacement
+        return component.render()
+    }
+
+    #mount(component, customPlacement) {
         const placements = {
             body: this.modalBody,
             header: this.modalHeader,
@@ -84,15 +122,26 @@ export class Modal {
         return el
     }
 
+    _addSetupHook(fn) {
+        this._setupHooks.push(fn)
+        if (this._mounted) fn(this.modal)
+    }
+
     bind(name) {
         modals[name] = this
         this.name = name
     }
 
     show() {
+        this.#initModal()
         this.#bindUpdates()
         this.showed = true
-        this.modal.classList.remove("y-win__hidden")
+
+        const modal = this.modal
+        void modal.offsetWidth
+        requestAnimationFrame(() => {
+            if (this.showed && modal) modal.classList.remove("y-win__hidden")
+        })
 
         if (this.type === 'modal') {
             document.body.style.overflow = 'hidden'
@@ -101,7 +150,7 @@ export class Modal {
         if (this._outsideClickEnabled) {
             setTimeout(() => {
                 this._outsideClickHandler = (e) => {
-                    if (e.target === this.modal || !this.modal.contains(e.target)) this.hide()
+                    if (e.target === this.modal || !this.modal.contains(e.target)) { this.hide(); this.#fireClose() }
                 }
                 document.addEventListener('click', this._outsideClickHandler)
             }, 0)
@@ -109,6 +158,8 @@ export class Modal {
     }
 
     hide() {
+        if (!this._mounted) return
+
         this.#bindUpdates()
         this.showed = false
         this.modal.classList.add("y-win__hidden")
@@ -122,13 +173,23 @@ export class Modal {
             document.removeEventListener('click', this._outsideClickHandler)
             this._outsideClickHandler = null
         }
+
+        setTimeout(() => {
+            if (this._mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
+                this.modal.remove()
+                this.modal = null
+                this._mounted = false
+            }
+        }, 300)
     }
 
     remove() {
         const idx = UIElements.indexOf(this)
         if (idx !== -1) {
             UIElements.splice(idx, 1)
-            this.modal.remove()
+            if (this._mounted && this.modal) {
+                this.modal.remove()
+            }
         }
     }
 
@@ -157,6 +218,7 @@ export class Modal {
     }
 
     setSize(size) {
+        this.#initModal()
         const sizes = ["full", "giant", "large", "medium", "default", "small", "nano"]
         if (sizes.includes(size)) {
             this.modal.classList.remove(this.size)
@@ -168,6 +230,7 @@ export class Modal {
     }
 
     setPosition(pos) {
+        this.#initModal()
         const positions = {
             right: "y-win__pos-right",
             center: "y-win__pos-center",
@@ -184,8 +247,8 @@ export class Modal {
     isToast() { return this.type === "toast" }
     isShowed() { return this.showed }
 
-    closeOnOutsideClick() {
-        this._outsideClickEnabled = true
+    #fireClose() {
+        if (this._onClose) this._onClose()
     }
 
     #bindUpdates() {

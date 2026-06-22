@@ -37,6 +37,7 @@ const cssOrder = [
     'components/VIconButton/index.css',
     'components/Select/index.css',
     'components/Dropdown/index.css',
+    'components/ContextMenu/index.css',
 ]
 
 const cssBundle = cssOrder.map(file => {
