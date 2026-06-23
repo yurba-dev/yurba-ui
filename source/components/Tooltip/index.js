@@ -25,6 +25,7 @@ export class Tooltip {
     _init() {
         this.target.addEventListener("mouseenter", () => this._scheduleShow())
         this.target.addEventListener("mouseleave", () => this._scheduleHide())
+        window.addEventListener("scroll", () => this.hide(), true)
     }
 
     _createTooltip() {

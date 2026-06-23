@@ -4,9 +4,9 @@
 }
 
 .y-dropdown__menu {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
+    position: fixed;
+    top: auto;
+    left: auto;
     min-width: 160px;
     background: var(--y-win-bg);
     border: 1px solid var(--y-win-divider);
@@ -26,13 +26,6 @@
     pointer-events: auto;
 }
 
-.y-dropdown__menu--portal {
-    position: fixed;
-    top: auto;
-    left: auto;
-    right: auto;
-    bottom: auto;
-}
 
 .y-dropdown__item-wrapper {
     position: relative;

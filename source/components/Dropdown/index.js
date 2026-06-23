@@ -48,7 +48,7 @@ export class DropdownComponent extends BaseComponent {
             if (this._menuMounted) return
 
             this._menu = document.createElement("div")
-            this._menu.className = "y-dropdown__menu y-dropdown__menu--portal y-win__hidden"
+            this._menu.className = "y-dropdown__menu y-win__hidden"
 
             if (this._content !== null) {
                 if (this._content instanceof HTMLElement) {
@@ -66,9 +66,7 @@ export class DropdownComponent extends BaseComponent {
                 if (!el.contains(e.target) && !this._menu.contains(e.target)) closeRoot()
             })
 
-            const reflow = () => { if (isOpen()) anchorFixed(trigger, this._menu, this._align) }
-            window.addEventListener("scroll", reflow, true)
-            window.addEventListener("resize", reflow)
+            window.addEventListener("scroll", () => { if (isOpen()) closeRoot() }, true)
 
             this._menuMounted = true
         }

@@ -34,21 +34,17 @@ export class SelectComponent extends BaseComponent {
             if (this._menuMounted) return
 
             this._menu = document.createElement("div")
-            this._menu.className = "y-select__menu y-select__menu--portal y-win__hidden"
+            this._menu.className = "y-select__menu y-win__hidden"
 
             this._renderMenu()
 
             document.addEventListener("click", (e) => {
                 if (!el.contains(e.target) && !this._menu.contains(e.target)) {
-                    this._menu.classList.add("y-win__hidden")
+                    this._close()
                 }
             })
 
-            const reflow = () => {
-                if (!this._menu.classList.contains("y-win__hidden")) this._reposition()
-            }
-            window.addEventListener("scroll", reflow, true)
-            window.addEventListener("resize", reflow)
+            window.addEventListener("scroll", () => this._close(), true)
 
             document.body.appendChild(this._menu)
             this._menuMounted = true
@@ -58,17 +54,10 @@ export class SelectComponent extends BaseComponent {
             e.stopPropagation()
             initMenu()
             const closing = !this._menu.classList.contains("y-win__hidden")
-            this._menu.classList.add("y-win__hidden")
+            this._close()
             if (!closing) {
-                this._reposition()
+                anchorFixed(this._trigger, this._menu, "left")
                 this._menu.classList.remove("y-win__hidden")
-            } else {
-                setTimeout(() => {
-                    if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
-                        this._menu.remove()
-                        this._menuMounted = false
-                    }
-                }, 300)
             }
         })
 
@@ -78,10 +67,9 @@ export class SelectComponent extends BaseComponent {
         return el
     }
 
-    _reposition() {
+    _close() {
         if (!this._menu) return
-        this._menu.style.minWidth = this._trigger.getBoundingClientRect().width + "px"
-        anchorFixed(this._trigger, this._menu, "left")
+        this._menu.classList.add("y-win__hidden")
     }
 
     _syncTrigger() {
@@ -142,15 +130,8 @@ export class SelectComponent extends BaseComponent {
                     this._value = opt.value
                     this._syncTrigger()
                     this._renderMenu()
-                    this._menu.classList.add("y-win__hidden")
+                    this._close()
                     this._changeHandlers.forEach(cb => cb(opt.value, opt))
-
-                    setTimeout(() => {
-                        if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
-                            this._menu.remove()
-                            this._menuMounted = false
-                        }
-                    }, 300)
                 }
             })
 
