@@ -39,10 +39,6 @@ button {
     transition: .1s;
 }
 
-button:hover {
-    background: var(--y-win-action-bg-hover);
-}
-
 .header {
     background: rgba(255, 255, 255, .92);
     backdrop-filter: blur(12px);

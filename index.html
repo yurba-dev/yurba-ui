@@ -27,6 +27,7 @@
                 <button class="tab-btn" data-tab="tab-select">Select</button>
                 <button class="tab-btn" data-tab="tab-dropdown">Dropdown</button>
                 <button class="tab-btn" data-tab="tab-context">Context Menu</button>
+                <button class="tab-btn" data-tab="tab-readmore">Readmore</button>
                 <button class="tab-btn" data-tab="tab-other">Other</button>
             </nav>
         </div>
@@ -1274,6 +1275,98 @@ button.addEventListener('click', (e) =&gt; {
 
         </div>
 
+
+        <div class="tab-panel" id="tab-readmore">
+
+            <div class="doc-header">
+                <h2 class="doc-component-name">YurbaUI.Readmore</h2>
+                <p class="doc-component-desc">Collapses tall content to a fixed height and appends a toggle button to expand or collapse it. No wrapping element needed.</p>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Constructor</div>
+                <div class="gap-stack">
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Readmore(target, options?)</code></pre>
+                    </div>
+                    <table class="api-table">
+                        <thead>
+                            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>target</code> <span class="required-badge">required</span></td>
+                                <td><span class="type-badge">HTMLElement</span> | <span class="type-badge">string</span></td>
+                                <td>—</td>
+                                <td>Element to collapse, or a CSS selector string.</td>
+                            </tr>
+                            <tr>
+                                <td><code>collapsedHeight</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">number</span></td>
+                                <td><code>200</code></td>
+                                <td>Height in pixels when collapsed.</td>
+                            </tr>
+                            <tr>
+                                <td><code>heightMargin</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">number</span></td>
+                                <td><code>16</code></td>
+                                <td>If the content is within this many pixels of <code>collapsedHeight</code>, it is not collapsed at all.</td>
+                            </tr>
+                            <tr>
+                                <td><code>moreText</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td><code>'Read more'</code></td>
+                                <td>Label on the toggle button when collapsed.</td>
+                            </tr>
+                            <tr>
+                                <td><code>lessText</code> <span class="optional-badge">optional</span></td>
+                                <td><span class="type-badge">string</span></td>
+                                <td><code>'Read less'</code></td>
+                                <td>Label on the toggle button when expanded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">new YurbaUI.Readmore(document.querySelector('.post-content'), {
+    collapsedHeight: 200,
+    heightMargin: 16,
+    moreText: 'Read more',
+    lessText: 'Read less',
+})</code></pre>
+                    </div>
+                    <p class="note">If a CSS selector string is passed, <code>document.querySelector()</code> is used. The toggle button is inserted immediately after the target element and is not a child of it.</p>
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Methods</div>
+                <table class="api-table">
+                    <thead>
+                        <tr><th>Method</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>expand()</code></td>
+                            <td>Expand to full height.</td>
+                        </tr>
+                        <tr>
+                            <td><code>collapse()</code></td>
+                            <td>Collapse back to <code>collapsedHeight</code>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="doc-section">
+                <div class="doc-section-title">Demo</div>
+                <div class="demo-readmore-content" id="demo-readmore-target">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                </div>
+            </div>
+
+        </div>
 
         <div class="tab-panel" id="tab-other">
 

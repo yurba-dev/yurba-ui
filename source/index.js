@@ -16,6 +16,7 @@ const YurbaUI = {
     MaterialIcon: YW.MaterialIconComponent,
     YurbaIcon: YW.YurbaIconComponent,
     Group: YW.Group,
+    Readmore: YW.Readmore,
 }
 
 export { YurbaUI }

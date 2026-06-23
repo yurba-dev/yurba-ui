@@ -38,6 +38,7 @@ const cssOrder = [
     'components/Select/index.css',
     'components/Dropdown/index.css',
     'components/ContextMenu/index.css',
+    'components/Readmore/index.css',
 ]
 
 const cssBundle = cssOrder.map(file => {

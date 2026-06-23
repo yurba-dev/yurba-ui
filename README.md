@@ -34,6 +34,7 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 | `YurbaUI.Select` | Dropdown select (single or multi) |
 | `YurbaUI.Dropdown` | Trigger-anchored menu or custom panel (icons, separators, nested submenus) |
 | `YurbaUI.ContextMenu` | Right-click menu opened at the cursor (same item model as Dropdown) |
+| `YurbaUI.Readmore` | Expandable text block with "Read more / Less" toggles |
 | `YurbaUI.Group` | Component group |
 | `YurbaUI.Title` | Title component |
 | `YurbaUI.Description` | Subtitle component |
@@ -92,6 +93,14 @@ const menu = new YurbaUI.ContextMenu([
 ])
 menu.bind('#target')        // or bind(element / NodeList / array)
 // menu.open(x, y)          // open manually at coordinates
+
+// Readmore
+new YurbaUI.Readmore(document.querySelector('.post-content'), {
+    collapsedHeight: 200,
+    heightMargin: 16,
+    moreText: 'Read more',
+    lessText: 'Read less',
+})
 ```
 
 See [demo](https://yurba-dev.github.io/yurba-ui/) for full documentation with parameter tables and examples for every component.
