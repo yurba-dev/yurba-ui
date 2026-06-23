@@ -12,6 +12,11 @@ export class DropdownComponent extends BaseComponent {
         this._onClose = properties.onClose ?? null
         this._align = properties.align ?? 'left'
         this._triggerClass = properties.triggerClass ?? null
+        // When true, the menu is mounted into the DOM (hidden) immediately on
+        // render() instead of lazily on first open, and is never removed on
+        // close. Useful when the menu content must exist in the DOM up-front
+        // (e.g. an audio player queried via document.querySelector).
+        this._keepMounted = properties.keepMounted ?? false
         this.placement = "body"
         this._menuMounted = false
         this._menu = null
@@ -35,6 +40,8 @@ export class DropdownComponent extends BaseComponent {
             this._menu.querySelectorAll(".y-dropdown__submenu").forEach(s => s.classList.add("y-win__hidden"))
             this._menu.dispatchEvent(new CustomEvent("yurba-dropdown:close", { bubbles: true }))
             if (this._onClose) this._onClose(this._menu)
+
+            if (this._keepMounted) return
 
             setTimeout(() => {
                 if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
@@ -66,7 +73,11 @@ export class DropdownComponent extends BaseComponent {
                 if (!el.contains(e.target) && !this._menu.contains(e.target)) closeRoot()
             })
 
-            window.addEventListener("scroll", () => { if (isOpen()) closeRoot() }, true)
+            window.addEventListener("scroll", (e) => {
+                if (!isOpen()) return
+                if (e.target instanceof Node && this._menu.contains(e.target)) return
+                closeRoot()
+            }, true)
 
             this._menuMounted = true
         }
@@ -86,6 +97,11 @@ export class DropdownComponent extends BaseComponent {
         })
 
         el.appendChild(trigger)
+
+        // Eagerly mount the (hidden) menu so its content lives in the DOM
+        // immediately, before the dropdown is ever opened.
+        if (this._keepMounted) initMenu()
+
         this.el = el
         this.menu = this._menu
         return el

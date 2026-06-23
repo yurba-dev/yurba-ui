@@ -783,7 +783,10 @@ var __yurbaui__ = (() => {
             this._close();
           }
         });
-        window.addEventListener("scroll", () => this._close(), true);
+        window.addEventListener("scroll", (e) => {
+          if (e.target instanceof Node && this._menu.contains(e.target)) return;
+          this._close();
+        }, true);
         document.body.appendChild(this._menu);
         this._menuMounted = true;
       };
@@ -891,6 +894,7 @@ var __yurbaui__ = (() => {
       this._onClose = properties.onClose ?? null;
       this._align = properties.align ?? "left";
       this._triggerClass = properties.triggerClass ?? null;
+      this._keepMounted = properties.keepMounted ?? false;
       this.placement = "body";
       this._menuMounted = false;
       this._menu = null;
@@ -910,6 +914,7 @@ var __yurbaui__ = (() => {
         this._menu.querySelectorAll(".y-dropdown__submenu").forEach((s) => s.classList.add("y-win__hidden"));
         this._menu.dispatchEvent(new CustomEvent("yurba-dropdown:close", { bubbles: true }));
         if (this._onClose) this._onClose(this._menu);
+        if (this._keepMounted) return;
         setTimeout(() => {
           if (this._menu && this._menu.classList.contains("y-win__hidden") && this._menu.parentNode) {
             this._menu.remove();
@@ -934,8 +939,10 @@ var __yurbaui__ = (() => {
         document.addEventListener("click", (e) => {
           if (!el.contains(e.target) && !this._menu.contains(e.target)) closeRoot();
         });
-        window.addEventListener("scroll", () => {
-          if (isOpen()) closeRoot();
+        window.addEventListener("scroll", (e) => {
+          if (!isOpen()) return;
+          if (e.target instanceof Node && this._menu.contains(e.target)) return;
+          closeRoot();
         }, true);
         this._menuMounted = true;
       };
@@ -952,6 +959,7 @@ var __yurbaui__ = (() => {
         else open();
       });
       el.appendChild(trigger);
+      if (this._keepMounted) initMenu();
       this.el = el;
       this.menu = this._menu;
       return el;
@@ -1002,7 +1010,10 @@ var __yurbaui__ = (() => {
       this._onKey = (e) => {
         if (e.key === "Escape") this.close();
       };
-      this._onScroll = () => this.close();
+      this._onScroll = (e) => {
+        if (e.target instanceof Node && this._menu && this._menu.contains(e.target)) return;
+        this.close();
+      };
       setTimeout(() => {
         document.addEventListener("click", this._onOutside);
         document.addEventListener("contextmenu", this._onOutside);

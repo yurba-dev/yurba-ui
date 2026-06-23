@@ -44,7 +44,10 @@ export class SelectComponent extends BaseComponent {
                 }
             })
 
-            window.addEventListener("scroll", () => this._close(), true)
+            window.addEventListener("scroll", (e) => {
+                if (e.target instanceof Node && this._menu.contains(e.target)) return
+                this._close()
+            }, true)
 
             document.body.appendChild(this._menu)
             this._menuMounted = true

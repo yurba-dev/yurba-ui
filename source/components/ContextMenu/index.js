@@ -51,7 +51,10 @@ export class ContextMenuComponent extends BaseComponent {
         this._onKey = (e) => {
             if (e.key === "Escape") this.close()
         }
-        this._onScroll = () => this.close()
+        this._onScroll = (e) => {
+            if (e.target instanceof Node && this._menu && this._menu.contains(e.target)) return
+            this.close()
+        }
 
         setTimeout(() => {
             document.addEventListener("click", this._onOutside)

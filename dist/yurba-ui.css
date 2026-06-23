@@ -577,6 +577,7 @@ body {
 }
 
 .y-dropdown__submenu {
+    position: absolute;
     top: 0;
     left: 100%;
     transform: scale(.96);
