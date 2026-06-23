@@ -6,16 +6,16 @@ export class Modal {
     constructor(properties = {}) {
         const size = "size" in properties ? properties.size : "default"
         this.size = size
-        this._properties = properties
-        this._mounted = false
-        this._outsideClickEnabled = properties.closeOnOutsideClick ?? true
-        this._onClose = properties.onClose ?? null
+        this.properties = properties
+        this.mounted = false
+        this.outsideClickEnabled = properties.closeOnOutsideClick ?? true
+        this.onClose = properties.onClose ?? null
 
-        this._renderQueue = []
-        this._setupHooks = []
+        this.renderQueue = []
+        this.setupHooks = []
 
         if (Array.isArray(properties.components)) {
-            properties.components.forEach(c => this._renderQueue.push({ component: c.content, placement: c.area }))
+            properties.components.forEach(component => this.renderQueue.push({ component: component.content, placement: component.area }))
         }
 
         this.modal = null
@@ -34,7 +34,7 @@ export class Modal {
     }
 
     #initModal() {
-        if (this._mounted) return
+        if (this.mounted) return
 
         this.modal = document.createElement("div")
         this.modal.classList.add("y-win__wrapper", "y-win__hidden", this.size)
@@ -58,9 +58,9 @@ export class Modal {
             </div>
         `
 
-        if ("parent" in this._properties) {
-            if (this._properties.parent instanceof HTMLElement) {
-                this._properties.parent.appendChild(this.modal)
+        if ("parent" in this.properties) {
+            if (this.properties.parent instanceof HTMLElement) {
+                this.properties.parent.appendChild(this.modal)
             } else {
                 error("properties.parent must be an HTML element")
             }
@@ -76,16 +76,16 @@ export class Modal {
         this.modalClose = this.modal.querySelector("#close")
 
         this.modalClose.addEventListener("click", () => { this.hide(); this.#fireClose() })
-        this._mounted = true
+        this.mounted = true
 
-        this._setupHooks.forEach(fn => fn(this.modal))
-        this._renderQueue.forEach(({ component, placement }) => this.#mount(component, placement))
+        this.setupHooks.forEach(hook => hook(this.modal))
+        this.renderQueue.forEach(({ component, placement }) => this.#mount(component, placement))
     }
 
     renderComponent(component, customPlacement) {
-        this._renderQueue.push({ component, placement: customPlacement })
+        this.renderQueue.push({ component, placement: customPlacement })
 
-        if (this._mounted) {
+        if (this.mounted) {
             return this.#mount(component, customPlacement)
         }
 
@@ -117,14 +117,14 @@ export class Modal {
 
         if (customPlacement) component.placement = customPlacement
 
-        const el = component.render()
-        placements[component.placement].appendChild(el)
-        return el
+        const element = component.render()
+        placements[component.placement].appendChild(element)
+        return element
     }
 
-    _addSetupHook(fn) {
-        this._setupHooks.push(fn)
-        if (this._mounted) fn(this.modal)
+    addSetupHook(hook) {
+        this.setupHooks.push(hook)
+        if (this.mounted) hook(this.modal)
     }
 
     bind(name) {
@@ -147,63 +147,63 @@ export class Modal {
             document.body.style.overflow = 'hidden'
         }
 
-        if (this._outsideClickEnabled) {
+        if (this.outsideClickEnabled) {
             setTimeout(() => {
-                this._outsideClickHandler = (e) => {
-                    if (e.target === this.modal || !this.modal.contains(e.target)) { this.hide(); this.#fireClose() }
+                this.outsideClickHandler = (event) => {
+                    if (event.target === this.modal || !this.modal.contains(event.target)) { this.hide(); this.#fireClose() }
                 }
-                document.addEventListener('click', this._outsideClickHandler)
+                document.addEventListener('click', this.outsideClickHandler)
             }, 0)
         }
     }
 
     hide() {
-        if (!this._mounted) return
+        if (!this.mounted) return
 
         this.#bindUpdates()
         this.showed = false
         this.modal.classList.add("y-win__hidden")
 
         if (this.type === 'modal') {
-            const anyModalOpen = UIElements.some(e => e !== this && e.showed && e.type === 'modal')
+            const anyModalOpen = UIElements.some(element => element !== this && element.showed && element.type === 'modal')
             if (!anyModalOpen) document.body.style.overflow = ''
         }
 
-        if (this._outsideClickHandler) {
-            document.removeEventListener('click', this._outsideClickHandler)
-            this._outsideClickHandler = null
+        if (this.outsideClickHandler) {
+            document.removeEventListener('click', this.outsideClickHandler)
+            this.outsideClickHandler = null
         }
 
         setTimeout(() => {
-            if (this._mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
+            if (this.mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
                 this.modal.remove()
                 this.modal = null
-                this._mounted = false
+                this.mounted = false
             }
         }, 300)
     }
 
     remove() {
-        const idx = UIElements.indexOf(this)
-        if (idx !== -1) {
-            UIElements.splice(idx, 1)
-            if (this._mounted && this.modal) {
+        const index = UIElements.indexOf(this)
+        if (index !== -1) {
+            UIElements.splice(index, 1)
+            if (this.mounted && this.modal) {
                 this.modal.remove()
             }
         }
     }
 
     hideOnTimeout(time = 0, properties = {}) {
-        this._hideDelay = time
-        this._hideTimeout = null
+        this.hideDelay = time
+        this.hideTimeout = null
 
         const startTimer = () => {
-            this._hideTimeout = setTimeout(() => this.hide(), this._hideDelay)
+            this.hideTimeout = setTimeout(() => this.hide(), this.hideDelay)
         }
         const clearTimer = () => {
-            if (this._hideTimeout) {
-                clearTimeout(this._hideTimeout)
-                this._hideTimeout = null
+            if (this.hideTimeout) {
+                clearTimeout(this.hideTimeout)
+                this.hideTimeout = null
             }
         }
 
@@ -211,8 +211,8 @@ export class Modal {
 
         if (properties.notHideWhenHovered) {
             this.modal.addEventListener("mouseover", () => clearTimer())
-            this.modal.addEventListener("mouseout", (e) => {
-                if (!this.modal.contains(e.relatedTarget)) startTimer()
+            this.modal.addEventListener("mouseout", (event) => {
+                if (!this.modal.contains(event.relatedTarget)) startTimer()
             })
         }
     }
@@ -229,7 +229,7 @@ export class Modal {
         }
     }
 
-    setPosition(pos) {
+    setPosition(position) {
         this.#initModal()
         const positions = {
             right: "y-win__pos-right",
@@ -238,8 +238,8 @@ export class Modal {
             bottom: "y-win__pos-bottom",
             top: "y-win__pos-top"
         }
-        pos.split("-").map(p => p.trim()).forEach(p => {
-            if (p in positions) this.modal.classList.add(positions[p])
+        position.split("-").map(part => part.trim()).forEach(part => {
+            if (part in positions) this.modal.classList.add(positions[part])
         })
     }
 
@@ -248,7 +248,7 @@ export class Modal {
     isShowed() { return this.showed }
 
     #fireClose() {
-        if (this._onClose) this._onClose()
+        if (this.onClose) this.onClose()
     }
 
     #bindUpdates() {
@@ -260,13 +260,13 @@ export class Modal {
     }
 
     #bindYModalAttributes() {
-        document.querySelectorAll("[y-win]").forEach(e => {
-            const ID = e.getAttribute("y-win")
-            e.addEventListener("click", () => {
-                if (ID in modals) {
-                    modals[ID].show()
+        document.querySelectorAll("[y-win]").forEach(element => {
+            const id = element.getAttribute("y-win")
+            element.addEventListener("click", () => {
+                if (id in modals) {
+                    modals[id].show()
                 } else {
-                    warn(`The "${ID}" modal window was not found. It has either been deleted or has not yet been created. Ignoring...`)
+                    warn(`The "${id}" modal window was not found. It has either been deleted or has not yet been created. Ignoring...`)
                 }
             })
         })

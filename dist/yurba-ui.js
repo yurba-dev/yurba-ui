@@ -122,14 +122,14 @@ var __yurbaui__ = (() => {
       __privateAdd(this, _Modal_instances);
       const size = "size" in properties ? properties.size : "default";
       this.size = size;
-      this._properties = properties;
-      this._mounted = false;
-      this._outsideClickEnabled = properties.closeOnOutsideClick ?? true;
-      this._onClose = properties.onClose ?? null;
-      this._renderQueue = [];
-      this._setupHooks = [];
+      this.properties = properties;
+      this.mounted = false;
+      this.outsideClickEnabled = properties.closeOnOutsideClick ?? true;
+      this.onClose = properties.onClose ?? null;
+      this.renderQueue = [];
+      this.setupHooks = [];
       if (Array.isArray(properties.components)) {
-        properties.components.forEach((c) => this._renderQueue.push({ component: c.content, placement: c.area }));
+        properties.components.forEach((component) => this.renderQueue.push({ component: component.content, placement: component.area }));
       }
       this.modal = null;
       this.modalHeader = null;
@@ -144,8 +144,8 @@ var __yurbaui__ = (() => {
       __privateMethod(this, _Modal_instances, bindYModalAttributes_fn).call(this);
     }
     renderComponent(component, customPlacement) {
-      this._renderQueue.push({ component, placement: customPlacement });
-      if (this._mounted) {
+      this.renderQueue.push({ component, placement: customPlacement });
+      if (this.mounted) {
         return __privateMethod(this, _Modal_instances, mount_fn).call(this, component, customPlacement);
       }
       if (component instanceof HTMLElement) return component;
@@ -155,9 +155,9 @@ var __yurbaui__ = (() => {
       if (customPlacement) component.placement = customPlacement;
       return component.render();
     }
-    _addSetupHook(fn) {
-      this._setupHooks.push(fn);
-      if (this._mounted) fn(this.modal);
+    addSetupHook(hook) {
+      this.setupHooks.push(hook);
+      if (this.mounted) hook(this.modal);
     }
     bind(name) {
       modals[name] = this;
@@ -175,65 +175,65 @@ var __yurbaui__ = (() => {
       if (this.type === "modal") {
         document.body.style.overflow = "hidden";
       }
-      if (this._outsideClickEnabled) {
+      if (this.outsideClickEnabled) {
         setTimeout(() => {
-          this._outsideClickHandler = (e) => {
-            if (e.target === this.modal || !this.modal.contains(e.target)) {
+          this.outsideClickHandler = (event) => {
+            if (event.target === this.modal || !this.modal.contains(event.target)) {
               this.hide();
               __privateMethod(this, _Modal_instances, fireClose_fn).call(this);
             }
           };
-          document.addEventListener("click", this._outsideClickHandler);
+          document.addEventListener("click", this.outsideClickHandler);
         }, 0);
       }
     }
     hide() {
-      if (!this._mounted) return;
+      if (!this.mounted) return;
       __privateMethod(this, _Modal_instances, bindUpdates_fn).call(this);
       this.showed = false;
       this.modal.classList.add("y-win__hidden");
       if (this.type === "modal") {
-        const anyModalOpen = UIElements.some((e) => e !== this && e.showed && e.type === "modal");
+        const anyModalOpen = UIElements.some((element) => element !== this && element.showed && element.type === "modal");
         if (!anyModalOpen) document.body.style.overflow = "";
       }
-      if (this._outsideClickHandler) {
-        document.removeEventListener("click", this._outsideClickHandler);
-        this._outsideClickHandler = null;
+      if (this.outsideClickHandler) {
+        document.removeEventListener("click", this.outsideClickHandler);
+        this.outsideClickHandler = null;
       }
       setTimeout(() => {
-        if (this._mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
+        if (this.mounted && this.modal && this.modal.classList.contains("y-win__hidden")) {
           this.modal.remove();
           this.modal = null;
-          this._mounted = false;
+          this.mounted = false;
         }
       }, 300);
     }
     remove() {
-      const idx = UIElements.indexOf(this);
-      if (idx !== -1) {
-        UIElements.splice(idx, 1);
-        if (this._mounted && this.modal) {
+      const index = UIElements.indexOf(this);
+      if (index !== -1) {
+        UIElements.splice(index, 1);
+        if (this.mounted && this.modal) {
           this.modal.remove();
         }
       }
     }
     hideOnTimeout(time = 0, properties = {}) {
-      this._hideDelay = time;
-      this._hideTimeout = null;
+      this.hideDelay = time;
+      this.hideTimeout = null;
       const startTimer = () => {
-        this._hideTimeout = setTimeout(() => this.hide(), this._hideDelay);
+        this.hideTimeout = setTimeout(() => this.hide(), this.hideDelay);
       };
       const clearTimer = () => {
-        if (this._hideTimeout) {
-          clearTimeout(this._hideTimeout);
-          this._hideTimeout = null;
+        if (this.hideTimeout) {
+          clearTimeout(this.hideTimeout);
+          this.hideTimeout = null;
         }
       };
       startTimer();
       if (properties.notHideWhenHovered) {
         this.modal.addEventListener("mouseover", () => clearTimer());
-        this.modal.addEventListener("mouseout", (e) => {
-          if (!this.modal.contains(e.relatedTarget)) startTimer();
+        this.modal.addEventListener("mouseout", (event) => {
+          if (!this.modal.contains(event.relatedTarget)) startTimer();
         });
       }
     }
@@ -248,7 +248,7 @@ var __yurbaui__ = (() => {
         error(`Resize error: Can't find size "${size}" in list of the allowed sizes: ${sizes.join(", ")}`);
       }
     }
-    setPosition(pos) {
+    setPosition(position) {
       __privateMethod(this, _Modal_instances, initModal_fn).call(this);
       const positions = {
         right: "y-win__pos-right",
@@ -257,8 +257,8 @@ var __yurbaui__ = (() => {
         bottom: "y-win__pos-bottom",
         top: "y-win__pos-top"
       };
-      pos.split("-").map((p) => p.trim()).forEach((p) => {
-        if (p in positions) this.modal.classList.add(positions[p]);
+      position.split("-").map((part) => part.trim()).forEach((part) => {
+        if (part in positions) this.modal.classList.add(positions[part]);
       });
     }
     isPopup() {
@@ -273,7 +273,7 @@ var __yurbaui__ = (() => {
   };
   _Modal_instances = new WeakSet();
   initModal_fn = function() {
-    if (this._mounted) return;
+    if (this.mounted) return;
     this.modal = document.createElement("div");
     this.modal.classList.add("y-win__wrapper", "y-win__hidden", this.size);
     this.modal.innerHTML = `
@@ -295,9 +295,9 @@ var __yurbaui__ = (() => {
                 </div>
             </div>
         `;
-    if ("parent" in this._properties) {
-      if (this._properties.parent instanceof HTMLElement) {
-        this._properties.parent.appendChild(this.modal);
+    if ("parent" in this.properties) {
+      if (this.properties.parent instanceof HTMLElement) {
+        this.properties.parent.appendChild(this.modal);
       } else {
         error("properties.parent must be an HTML element");
       }
@@ -314,9 +314,9 @@ var __yurbaui__ = (() => {
       this.hide();
       __privateMethod(this, _Modal_instances, fireClose_fn).call(this);
     });
-    this._mounted = true;
-    this._setupHooks.forEach((fn) => fn(this.modal));
-    this._renderQueue.forEach(({ component, placement }) => __privateMethod(this, _Modal_instances, mount_fn).call(this, component, placement));
+    this.mounted = true;
+    this.setupHooks.forEach((hook) => hook(this.modal));
+    this.renderQueue.forEach(({ component, placement }) => __privateMethod(this, _Modal_instances, mount_fn).call(this, component, placement));
   };
   mount_fn = function(component, customPlacement) {
     const placements = {
@@ -334,12 +334,12 @@ var __yurbaui__ = (() => {
       error("The component must inherit from BaseComponent or be an HTMLElement", "component");
     }
     if (customPlacement) component.placement = customPlacement;
-    const el = component.render();
-    placements[component.placement].appendChild(el);
-    return el;
+    const element = component.render();
+    placements[component.placement].appendChild(element);
+    return element;
   };
   fireClose_fn = function() {
-    if (this._onClose) this._onClose();
+    if (this.onClose) this.onClose();
   };
   bindUpdates_fn = function() {
     if (this.modalHeader.childNodes.length === 0) {
@@ -349,13 +349,13 @@ var __yurbaui__ = (() => {
     }
   };
   bindYModalAttributes_fn = function() {
-    document.querySelectorAll("[y-win]").forEach((e) => {
-      const ID = e.getAttribute("y-win");
-      e.addEventListener("click", () => {
-        if (ID in modals) {
-          modals[ID].show();
+    document.querySelectorAll("[y-win]").forEach((element) => {
+      const id = element.getAttribute("y-win");
+      element.addEventListener("click", () => {
+        if (id in modals) {
+          modals[id].show();
         } else {
-          warn(`The "${ID}" modal window was not found. It has either been deleted or has not yet been created. Ignoring...`);
+          warn(`The "${id}" modal window was not found. It has either been deleted or has not yet been created. Ignoring...`);
         }
       });
     });
@@ -429,8 +429,8 @@ var __yurbaui__ = (() => {
     constructor(properties = {}) {
       super();
       this.type = "toast";
-      this._timeout = properties.timeout ?? 2e3;
-      this._addSetupHook((modal) => {
+      this.timeout = properties.timeout ?? 2e3;
+      this.addSetupHook((modal) => {
         modal.setAttribute("type", "toast");
         modal.style.setProperty("--y-win-body-padding", "5px 10px 15px 15px");
         modal.style.setProperty("--y-win-header-padding", "10px");
@@ -447,7 +447,7 @@ var __yurbaui__ = (() => {
     }
     show() {
       super.show();
-      this.hideOnTimeout(this._timeout, { notHideWhenHovered: true });
+      this.hideOnTimeout(this.timeout, { notHideWhenHovered: true });
     }
   };
 
@@ -467,16 +467,16 @@ var __yurbaui__ = (() => {
       this.tooltip = null;
       this.showTimeout = null;
       this.hideTimeout = null;
-      this._mounted = false;
-      this._init();
+      this.mounted = false;
+      this.init();
     }
-    _init() {
-      this.target.addEventListener("mouseenter", () => this._scheduleShow());
-      this.target.addEventListener("mouseleave", () => this._scheduleHide());
+    init() {
+      this.target.addEventListener("mouseenter", () => this.scheduleShow());
+      this.target.addEventListener("mouseleave", () => this.scheduleHide());
       window.addEventListener("scroll", () => this.hide(), true);
     }
-    _createTooltip() {
-      if (this._mounted) return;
+    createTooltip() {
+      if (this.mounted) return;
       const tooltip = document.createElement("div");
       tooltip.classList.add("y-tooltip", "y-win__hidden");
       if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean));
@@ -497,66 +497,66 @@ var __yurbaui__ = (() => {
             <div class="y-tooltip__content">${this.props.content}</div>
         `;
       document.body.appendChild(tooltip);
-      tooltip.addEventListener("mouseenter", () => this._clearHide());
-      tooltip.addEventListener("mouseleave", () => this._scheduleHide());
+      tooltip.addEventListener("mouseenter", () => this.clearHide());
+      tooltip.addEventListener("mouseleave", () => this.scheduleHide());
       this.tooltip = tooltip;
-      this._mounted = true;
+      this.mounted = true;
     }
-    _scheduleShow() {
-      this._clearHide();
+    scheduleShow() {
+      this.clearHide();
       this.showTimeout = setTimeout(() => this.show(), this.props.delay);
     }
-    _scheduleHide() {
-      this._clearShow();
+    scheduleHide() {
+      this.clearShow();
       this.hideTimeout = setTimeout(() => this.hide(), this.props.delay);
     }
-    _clearShow() {
+    clearShow() {
       if (this.showTimeout) {
         clearTimeout(this.showTimeout);
         this.showTimeout = null;
       }
     }
-    _clearHide() {
+    clearHide() {
       if (this.hideTimeout) {
         clearTimeout(this.hideTimeout);
         this.hideTimeout = null;
       }
     }
     show() {
-      this._createTooltip();
+      this.createTooltip();
       const offset = this.props.offset;
       const rect = this.target.getBoundingClientRect();
-      const tRect = this.tooltip.getBoundingClientRect();
+      const tooltipRect = this.tooltip.getBoundingClientRect();
       let pos = this.props.pos;
-      if (pos === "top" && rect.top < tRect.height + offset) pos = "bottom";
-      if (pos === "bottom" && rect.bottom + tRect.height + offset > window.innerHeight) pos = "top";
-      if (pos === "left" && rect.left < tRect.width + offset) pos = "right";
-      if (pos === "right" && rect.right + tRect.width + offset > window.innerWidth) pos = "left";
+      if (pos === "top" && rect.top < tooltipRect.height + offset) pos = "bottom";
+      if (pos === "bottom" && rect.bottom + tooltipRect.height + offset > window.innerHeight) pos = "top";
+      if (pos === "left" && rect.left < tooltipRect.width + offset) pos = "right";
+      if (pos === "right" && rect.right + tooltipRect.width + offset > window.innerWidth) pos = "left";
       let top = 0;
       let left = 0;
       switch (pos) {
         case "top":
-          top = rect.top - tRect.height - offset;
-          left = rect.left + rect.width / 2 - tRect.width / 2;
+          top = rect.top - tooltipRect.height - offset;
+          left = rect.left + rect.width / 2 - tooltipRect.width / 2;
           break;
         case "bottom":
           top = rect.bottom + offset;
-          left = rect.left + rect.width / 2 - tRect.width / 2;
+          left = rect.left + rect.width / 2 - tooltipRect.width / 2;
           break;
         case "left":
-          top = rect.top + rect.height / 2 - tRect.height / 2;
-          left = rect.left - tRect.width - offset;
+          top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+          left = rect.left - tooltipRect.width - offset;
           break;
         case "right":
-          top = rect.top + rect.height / 2 - tRect.height / 2;
+          top = rect.top + rect.height / 2 - tooltipRect.height / 2;
           left = rect.right + offset;
           break;
       }
       const pad = 8;
       if (left < pad) left = pad;
-      if (left + tRect.width > window.innerWidth - pad) left = window.innerWidth - tRect.width - pad;
+      if (left + tooltipRect.width > window.innerWidth - pad) left = window.innerWidth - tooltipRect.width - pad;
       if (top < pad) top = pad;
-      if (top + tRect.height > window.innerHeight - pad) top = window.innerHeight - tRect.height - pad;
+      if (top + tooltipRect.height > window.innerHeight - pad) top = window.innerHeight - tooltipRect.height - pad;
       this.tooltip.style.top = `${top + window.scrollY}px`;
       this.tooltip.style.left = `${left + window.scrollX}px`;
       void this.tooltip.offsetWidth;
@@ -570,7 +570,7 @@ var __yurbaui__ = (() => {
       setTimeout(() => {
         if (this.tooltip && this.tooltip.classList.contains("y-win__hidden")) {
           this.tooltip.remove();
-          this._mounted = false;
+          this.mounted = false;
         }
       }, 300);
     }

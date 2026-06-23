@@ -17,19 +17,19 @@ export class Tooltip {
         this.tooltip = null
         this.showTimeout = null
         this.hideTimeout = null
-        this._mounted = false
+        this.mounted = false
 
-        this._init()
+        this.init()
     }
 
-    _init() {
-        this.target.addEventListener("mouseenter", () => this._scheduleShow())
-        this.target.addEventListener("mouseleave", () => this._scheduleHide())
+    init() {
+        this.target.addEventListener("mouseenter", () => this.scheduleShow())
+        this.target.addEventListener("mouseleave", () => this.scheduleHide())
         window.addEventListener("scroll", () => this.hide(), true)
     }
 
-    _createTooltip() {
-        if (this._mounted) return
+    createTooltip() {
+        if (this.mounted) return
 
         const tooltip = document.createElement("div")
         tooltip.classList.add("y-tooltip", "y-win__hidden")
@@ -57,31 +57,31 @@ export class Tooltip {
 
         document.body.appendChild(tooltip)
 
-        tooltip.addEventListener("mouseenter", () => this._clearHide())
-        tooltip.addEventListener("mouseleave", () => this._scheduleHide())
+        tooltip.addEventListener("mouseenter", () => this.clearHide())
+        tooltip.addEventListener("mouseleave", () => this.scheduleHide())
 
         this.tooltip = tooltip
-        this._mounted = true
+        this.mounted = true
     }
 
-    _scheduleShow() {
-        this._clearHide()
+    scheduleShow() {
+        this.clearHide()
         this.showTimeout = setTimeout(() => this.show(), this.props.delay)
     }
 
-    _scheduleHide() {
-        this._clearShow()
+    scheduleHide() {
+        this.clearShow()
         this.hideTimeout = setTimeout(() => this.hide(), this.props.delay)
     }
 
-    _clearShow() {
+    clearShow() {
         if (this.showTimeout) {
             clearTimeout(this.showTimeout)
             this.showTimeout = null
         }
     }
 
-    _clearHide() {
+    clearHide() {
         if (this.hideTimeout) {
             clearTimeout(this.hideTimeout)
             this.hideTimeout = null
@@ -89,46 +89,46 @@ export class Tooltip {
     }
 
     show() {
-        this._createTooltip()
+        this.createTooltip()
         const offset = this.props.offset
 
         const rect = this.target.getBoundingClientRect()
-        const tRect = this.tooltip.getBoundingClientRect()
+        const tooltipRect = this.tooltip.getBoundingClientRect()
 
         let pos = this.props.pos
 
-        if (pos === "top" && rect.top < tRect.height + offset) pos = "bottom"
-        if (pos === "bottom" && rect.bottom + tRect.height + offset > window.innerHeight) pos = "top"
-        if (pos === "left" && rect.left < tRect.width + offset) pos = "right"
-        if (pos === "right" && rect.right + tRect.width + offset > window.innerWidth) pos = "left"
+        if (pos === "top" && rect.top < tooltipRect.height + offset) pos = "bottom"
+        if (pos === "bottom" && rect.bottom + tooltipRect.height + offset > window.innerHeight) pos = "top"
+        if (pos === "left" && rect.left < tooltipRect.width + offset) pos = "right"
+        if (pos === "right" && rect.right + tooltipRect.width + offset > window.innerWidth) pos = "left"
 
         let top = 0
         let left = 0
 
         switch (pos) {
             case "top":
-                top = rect.top - tRect.height - offset
-                left = rect.left + rect.width / 2 - tRect.width / 2
+                top = rect.top - tooltipRect.height - offset
+                left = rect.left + rect.width / 2 - tooltipRect.width / 2
                 break
             case "bottom":
                 top = rect.bottom + offset
-                left = rect.left + rect.width / 2 - tRect.width / 2
+                left = rect.left + rect.width / 2 - tooltipRect.width / 2
                 break
             case "left":
-                top = rect.top + rect.height / 2 - tRect.height / 2
-                left = rect.left - tRect.width - offset
+                top = rect.top + rect.height / 2 - tooltipRect.height / 2
+                left = rect.left - tooltipRect.width - offset
                 break
             case "right":
-                top = rect.top + rect.height / 2 - tRect.height / 2
+                top = rect.top + rect.height / 2 - tooltipRect.height / 2
                 left = rect.right + offset
                 break
         }
 
         const pad = 8
         if (left < pad) left = pad
-        if (left + tRect.width > window.innerWidth - pad) left = window.innerWidth - tRect.width - pad
+        if (left + tooltipRect.width > window.innerWidth - pad) left = window.innerWidth - tooltipRect.width - pad
         if (top < pad) top = pad
-        if (top + tRect.height > window.innerHeight - pad) top = window.innerHeight - tRect.height - pad
+        if (top + tooltipRect.height > window.innerHeight - pad) top = window.innerHeight - tooltipRect.height - pad
 
         this.tooltip.style.top = `${top + window.scrollY}px`
         this.tooltip.style.left = `${left + window.scrollX}px`
@@ -145,7 +145,7 @@ export class Tooltip {
         setTimeout(() => {
             if (this.tooltip && this.tooltip.classList.contains("y-win__hidden")) {
                 this.tooltip.remove()
-                this._mounted = false
+                this.mounted = false
             }
         }, 300)
     }

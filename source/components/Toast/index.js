@@ -7,9 +7,9 @@ export class Toast extends Modal {
     constructor(properties = {}) {
         super()
         this.type = "toast"
-        this._timeout = properties.timeout ?? 2000
+        this.timeout = properties.timeout ?? 2000
 
-        this._addSetupHook(modal => {
+        this.addSetupHook(modal => {
             modal.setAttribute("type", "toast")
             modal.style.setProperty('--y-win-body-padding', '5px 10px 15px 15px')
             modal.style.setProperty('--y-win-header-padding', '10px')
@@ -29,6 +29,6 @@ export class Toast extends Modal {
 
     show() {
         super.show()
-        this.hideOnTimeout(this._timeout, { notHideWhenHovered: true })
+        this.hideOnTimeout(this.timeout, { notHideWhenHovered: true })
     }
 }
