@@ -1,0 +1,26 @@
+.y-win__title-icon {
+    font-size: 18px!important;
+    background: var(--y-win-action-bg);
+    border-radius: 100%;
+    width: 20px;
+    height: 20px;
+    display: flex!important;
+    align-items: center;
+    justify-content: center;
+}
+.y-win__title-icon.danger {
+    background: #ff49491f;
+    color: #ff4949;
+}
+.y-win__title-icon.info {
+    background: #49b9ff1f;
+    color: #49b9ff;
+}
+.y-win__title-icon.success {
+    background: #3dd2551f;
+    color: #3dd255;
+}
+.y-win__title-icon.warning {
+    background: #eec0451f;
+    color: #ff7d45;
+}

@@ -1,0 +1,18 @@
+.y-readmore {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.y-readmore__toggle {
+    all: unset;
+    display: inline-block;
+    margin-top: 8px;
+    cursor: pointer;
+    color: var(--y-win-accent, #5b7cf6);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.y-readmore__toggle:hover {
+    opacity: 0.8;
+}
