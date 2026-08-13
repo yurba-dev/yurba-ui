@@ -208,9 +208,11 @@ body {
 .y-win__header {
     font-size: 15px;
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    gap: 10px;
     flex-shrink: 0;
+    padding: var(--y-win-header-padding);
+    border-bottom: 1px solid var(--y-win-divider);
     background: var(--y-win-bg-transparent);
     backdrop-filter: blur(10px);
     z-index: 9;
@@ -218,23 +220,15 @@ body {
 }
 
 .y-win__header .y-win__header-body {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: var(--y-win-header-padding);
-    border-bottom: 1px solid var(--y-win-divider);
-}
-
-.y-win__header .y-win__header-body.y-win__header-empty {
-    border-bottom: 0px;
-    padding: 0px;
 }
 
 .y-win__header-actions {
-    width: fit-content;
-    position: absolute;
-    right: calc(var(--y-win-header-padding) - 3px);
-    top: calc(var(--y-win-header-padding) - 3px);
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 15px;

@@ -851,13 +851,16 @@ var __yurbaui__ = (() => {
             else this._values.splice(idx, 1);
             this._syncTrigger();
             this._renderMenu();
-            this._changeHandlers.forEach((cb) => cb([...this._values], this._options.filter((o) => this._values.includes(o.value))));
+            const selected = this._options.filter((o) => this._values.includes(o.value));
+            this._changeHandlers.forEach((cb) => cb([...this._values], selected));
+            this._emitChange({ values: [...this._values], options: selected });
           } else {
             this._value = opt.value;
             this._syncTrigger();
             this._renderMenu();
             this._close();
             this._changeHandlers.forEach((cb) => cb(opt.value, opt));
+            this._emitChange({ value: opt.value, option: opt });
           }
         });
         this._menu.appendChild(item);
@@ -875,6 +878,10 @@ var __yurbaui__ = (() => {
       this._syncTrigger();
       if (this._menuMounted) this._renderMenu();
       return this;
+    }
+    _emitChange(detail) {
+      if (!this.el) return;
+      this.el.dispatchEvent(new CustomEvent("yurba-select:change", { detail, bubbles: true }));
     }
     onChange(cb) {
       this._changeHandlers.push(cb);

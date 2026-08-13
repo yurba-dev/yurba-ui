@@ -740,6 +740,38 @@ new YurbaUI.Tooltip(el, { pos: 'right',  title: 'Title', content: 'Content' })</
             </div>
 
             <div class="doc-section">
+                <div class="doc-section-title">Events</div>
+                <div class="gap-stack">
+                    <p class="note">The select dispatches a bubbling <code>CustomEvent</code> on its root element (the node returned by <code>render()</code>). Listen with <code>addEventListener</code>, or use the <code>onChange()</code> method for a callback equivalent.</p>
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Fires on</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>yurba-select:change</code></td>
+                                <td><code>select.render()</code></td>
+                                <td>The user picked an option. <code>detail</code> is <code>{ value, option }</code> (single) or <code>{ values, options }</code> (multi). Programmatic <code>setValue()</code> does not fire it.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const select = new YurbaUI.Select(options)
+const el = select.render()
+container.appendChild(el)
+
+el.addEventListener('yurba-select:change', (e) =&gt; {
+    console.log(e.detail.value)   // single: e.detail.option; multi: e.detail.values / .options
+})</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section">
                 <div class="doc-section-title">Demo</div>
                 <div class="demo-grid">
 

@@ -75,8 +75,13 @@ const select = new YurbaUI.Select(
     [{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }],
     { placeholder: 'Choose...' }
 )
-select.onChange(value => console.log(value))
-container.appendChild(select.render())
+const el = select.render()
+container.appendChild(el)
+// Two ways to react to a user selection:
+select.onChange(value => console.log(value))                 // callback API
+el.addEventListener('yurba-select:change', e => console.log(e.detail.value)) // DOM event
+// The event bubbles; detail is { value, option } (single) or { values, options } (multi).
+// Only a user selection fires it — setValue() stays silent, like a native <select>.
 
 // Dropdown
 const dropdown = new YurbaUI.Dropdown(
