@@ -1,6 +1,7 @@
+/* Image */
+
 .y-win__image {
-    border-radius: 5px;
-    box-shadow: #00000026 0px 5px 9px 0px;
+    border-radius: var(--yurba-radius-m, 10px);
 }
 
 .y-win__image.y-win__mini-image {
@@ -12,5 +13,5 @@
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 100%;
+    border-radius: 50%;
 }

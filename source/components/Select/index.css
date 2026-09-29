@@ -1,26 +1,54 @@
+/* Select */
+
 .y-select {
     position: relative;
     display: inline-flex;
     font-size: 14px;
 }
 
+/* In place of a form field it fills the row, as the field did */
+.y-select--wide {
+    display: flex;
+    width: 100%;
+}
+
+/* Trigger */
+
 .y-select__trigger {
     all: unset;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 10px;
-    background: var(--y-win-action-bg);
-    border-radius: 8px;
+    width: 100%;
+    min-width: 100px;
+    min-height: 44px;
+    padding: 0 14px;
+    line-height: 1.4;
+    border: 1px solid var(--y-win-divider);
+    border-radius: var(--yurba-radius-l, 14px);
+    background: var(--y-win-bg);
+    color: var(--y-win-text);
+    font-family: inherit;
+    font-size: 14px;
     cursor: pointer;
     user-select: none;
-    min-width: 100px;
-    transition: .1s;
+    transition: border-color .15s ease;
     box-sizing: border-box;
 }
 
 .y-select__trigger:hover {
-    background: var(--y-win-action-bg-hover);
+    border-color: var(--y-win-action-bg-hover);
+    border-color: color-mix(in srgb, var(--y-win-text) 18%, var(--y-win-divider));
+}
+
+.y-select__trigger:focus-visible,
+.y-select__trigger.is-open {
+    border-color: var(--y-win-accent);
+}
+
+.y-select__trigger:disabled {
+    opacity: .5;
+    pointer-events: none;
 }
 
 .y-select__label {
@@ -28,6 +56,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
 }
 
 .y-select__arrow {
@@ -35,61 +64,11 @@
     align-items: center;
     opacity: .5;
     flex-shrink: 0;
+    transition: transform .15s ease;
 }
 
-.y-select__menu {
-    position: fixed;
-    top: auto;
-    left: auto;
-    min-width: 100px;
-    background: var(--y-win-bg);
-    border: 1px solid var(--y-win-divider);
-    border-radius: var(--y-win-border-radius);
-    box-shadow: #0000001c 0 5px 20px;
-    z-index: 9999;
-    overflow: hidden;
-    max-height: 240px;
-    opacity: 0;
-    transform: translateY(4px) scale(.98);
-    transition: .15s ease;
-    pointer-events: none;
-    padding: 4px;
-}
-
-.y-select__menu:not(.is-hidden) {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-    overflow-y: auto;
-}
-
-.y-select__item {
-    all: unset;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: .1s;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.y-select__item:hover {
-    background: var(--y-win-action-bg);
-}
-
-.y-select__item.is-active {
-    font-weight: 600;
-}
-
-.y-select__item-icon {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
+.y-select__trigger.is-open .y-select__arrow {
+    transform: rotate(180deg);
 }
 
 .y-select__placeholder {
@@ -101,31 +80,129 @@
     opacity: .4;
 }
 
+/* Menu */
+
+.y-select__menu {
+    position: fixed;
+    top: auto;
+    left: auto;
+    min-width: 180px;
+    box-sizing: border-box;
+    background: var(--y-win-bg);
+    color: var(--y-win-text);
+    font-family: inherit;
+    border-radius: var(--y-win-border-radius, var(--y-win-menu-radius));
+    box-shadow: var(--y-win-shadow-menu);
+    z-index: 9999;
+    overflow: hidden;
+    max-height: 240px;
+    opacity: 0;
+    transform: scale(.96);
+    transform-origin: top;
+    transition: opacity var(--y-win-exit), transform var(--y-win-exit);
+    pointer-events: none;
+    padding: 6px;
+}
+
+.y-select__menu:not(.is-hidden) {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    overflow-y: auto;
+    transition: opacity var(--y-win-enter), transform var(--y-win-enter);
+}
+
+.y-select__item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 36px;
+    padding: 8px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: var(--y-win-item-radius);
+    color: var(--y-win-text);
+    cursor: pointer;
+    transition: background .15s ease;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.y-select__item:hover {
+    background: var(--y-win-action-bg);
+}
+
+.y-select__item:focus-visible {
+    background: var(--y-win-action-bg);
+    outline: 2px solid var(--y-win-accent);
+    outline-offset: -2px;
+}
+
+.y-select__item.is-active {
+    background: var(--y-win-accent-bg);
+}
+
+.y-select__item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.y-select__item-icon > :is(.material-symbols-rounded, .material-symbols-outlined, .yrb, .symbol, svg) {
+    font-size: inherit;
+    opacity: .7;
+}
+
+.y-select__label .y-select__item-icon {
+    min-width: 0;
+    font-size: 18px;
+}
+
 .y-select__check {
     flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1.5px solid var(--y-win-divider);
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--yurba-body-color, var(--y-win-action-bg-hover));
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: .1s;
+    transition: background .15s ease, border-color .15s ease;
 }
 
 .y-select__item.is-active .y-select__check {
-    background: var(--y-win-accent, #5b7cf6);
-    border-color: var(--y-win-accent, #5b7cf6);
+    background: var(--y-win-accent);
+    border-color: var(--y-win-accent);
 }
 
 .y-select__item.is-active .y-select__check::after {
     content: '';
     display: block;
     width: 4px;
-    height: 7px;
-    border: 1.5px solid #fff;
+    height: 8px;
+    border: 2px solid var(--yurba-on-brand-color, #fff);
     border-top: none;
     border-left: none;
     transform: rotate(45deg) translateY(-1px);
+}
+
+.y-select__check:not(:empty) {
+    color: var(--yurba-on-brand-color, #fff);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.y-select__check > :is(.material-symbols-rounded, .material-symbols-outlined, .yrb, .symbol) {
+    font-size: inherit;
+}
+
+.y-select__item.is-active .y-select__check:not(:empty)::after {
+    content: none;
 }

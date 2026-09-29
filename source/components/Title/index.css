@@ -1,5 +1,9 @@
+/* Title */
+
 .y-win__header .y-win__title {
+    font-size: 17px;
     font-weight: 700;
+    line-height: 1.4;
 }
 .y-win__body .y-win__title {
     font-weight: 700;

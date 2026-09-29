@@ -10,11 +10,12 @@ export class BaseComponent {
     }
 
     setProperty(name, value) {
-        const props = componentProperties(this.el)
-        if (value == undefined) {
-            props[name]()
+        const prop = componentProperties(this.el)[name]
+        if (prop == undefined) error(`Unknown property "${name}"`, "component")
+        if (typeof prop == "function") {
+            prop(value)
         } else {
-            props[name][value]()
+            prop[value]()
         }
         this.subscribedProperties[name] = value
     }
@@ -66,4 +67,6 @@ export function generateUniqueID(content) {
     }
     return btoa(Math.floor(Math.random() * 9999) + 1).replaceAll("=", "")
 }
-export const hasDuplicates = (arr) => new Set(arr).size != arr.length
+export function hasDuplicates(arr) {
+    return new Set(arr).size != arr.length
+}

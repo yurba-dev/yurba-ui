@@ -1,19 +1,31 @@
+/* ContextMenu */
+
 .y-context-menu {
     position: fixed;
     min-width: 180px;
+    box-sizing: border-box;
     background: var(--y-win-bg);
-    border: 1px solid var(--y-win-divider);
-    border-radius: var(--y-win-border-radius);
-    box-shadow: #0000001c 0 5px 20px;
+    color: var(--y-win-text);
+    font-family: inherit;
+    border-radius: var(--y-win-border-radius, var(--y-win-menu-radius));
+    box-shadow: var(--y-win-shadow-menu);
     z-index: 10000;
-    padding: 4px;
+    padding: 6px;
     opacity: 1;
     transform: scale(1);
-    transition: .12s ease;
+    transform-origin: top left;
+    transition: opacity var(--y-win-enter), transform var(--y-win-enter);
 }
 
 .y-context-menu.is-hidden {
     opacity: 0;
-    transform: scale(.98);
+    transform: scale(.96);
     pointer-events: none;
+    transition: opacity var(--y-win-exit), transform var(--y-win-exit);
+}
+
+.y-context-menu.is-scrollable {
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }

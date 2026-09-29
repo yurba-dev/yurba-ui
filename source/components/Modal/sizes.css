@@ -1,29 +1,43 @@
-.y-win__wrapper.full .y-win {
-    width: 100%;
-    height: 100%;
-    --y-win-border-radius: 0px;
-    max-height: 100%;
-}
+/* Sizes */
 
-.y-win__wrapper.giant .y-win {
-    width: 90%;
-}
-
-.y-win__wrapper.large .y-win {
-    width: 70%;
-}
-
-.y-win__wrapper.medium .y-win {
-    width: 30%;
-}
-
-.y-win__wrapper.small .y-win {
-    width: 20%;
+/* Fixed widths, so a window is the same on any wide screen; a narrow one takes what it has */
+.y-win__wrapper:not([type="toast"]) .y-win {
+    max-width: calc(100% - 32px);
 }
 
 .y-win__wrapper.nano .y-win {
-    width: 15%;
+    width: 320px;
 }
+
+.y-win__wrapper.small .y-win {
+    width: 360px;
+}
+
+.y-win__wrapper.default .y-win {
+    width: 420px;
+}
+
+.y-win__wrapper.medium .y-win {
+    width: 560px;
+}
+
+.y-win__wrapper.large .y-win {
+    width: 960px;
+}
+
+.y-win__wrapper.giant .y-win {
+    width: 1200px;
+}
+
+.y-win__wrapper.full .y-win {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    --y-win-border-radius: 0px;
+}
+
+/* Popup */
 
 .y-win__wrapper[type="popup"] .y-win {
     width: 400px;
@@ -33,6 +47,8 @@
     display: none!important;
 }
 
+/* Toast */
+
 .y-win__wrapper[type="toast"] {
     background: transparent;
     position: static;
@@ -40,13 +56,135 @@
     height: 0;
 }
 .y-win__wrapper[type="toast"] .y-win {
-    width: 400px;
+    width: min(400px, calc(100vw - 20px));
     height: fit-content;
     position: fixed;
     bottom: 10px;
     right: 10px;
-    border: 1px solid var(--y-win-action-bg);
+    border-radius: var(--y-win-border-radius, var(--y-win-menu-radius));
+    box-shadow: var(--y-win-shadow-menu);
+}
+
+.y-win__wrapper[type="toast"] .y-win__header {
+    border-bottom: none;
+}
+
+.y-win__wrapper[type="toast"] .y-win__title {
+    font-size: 15px;
+}
+
+.y-win__wrapper[type="toast"] .y-win__body {
+    font-size: 14px;
+}
+
+.y-win__toasts {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    z-index: var(--y-win-zindex);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
+}
+.y-win__toasts:empty {
+    display: none;
+}
+.y-win__toasts > .y-win__wrapper[type="toast"] {
+    width: auto;
+    height: auto;
+}
+.y-win__toasts > .y-win__wrapper[type="toast"]:not(.is-hidden) {
+    pointer-events: auto;
+}
+.y-win__toasts > .y-win__wrapper[type="toast"] .y-win {
+    position: relative;
+    bottom: auto;
+    right: auto;
 }
 .y-win__wrapper[type="toast"] .y-win__body:empty {
     display: none;
+}
+
+/* Fullscreen */
+
+/* On a phone a window takes the screen; a confirmation stays small */
+@media (max-width: 768px) {
+    .y-win__wrapper:is(.default, .medium, .large, .giant):not(.compact):not(.sheet):not([type]) .y-win {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        --y-win-border-radius: 0px;
+    }
+}
+
+/* Modeless */
+
+.y-win__wrapper.modeless {
+    background: transparent;
+    pointer-events: none;
+}
+
+.y-win__wrapper.modeless .y-win {
+    pointer-events: auto;
+}
+
+@media (min-width: 769px) {
+    .y-win__wrapper.modeless {
+        box-sizing: border-box;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 72px 16px 0 0;
+    }
+}
+
+/* Sheet */
+
+.y-win__handle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .y-win__wrapper.sheet {
+        align-items: flex-end;
+    }
+
+    .y-win__wrapper.sheet .y-win {
+        width: 100%;
+        max-width: 100%;
+        max-height: 85vh;
+        padding-bottom: env(safe-area-inset-bottom);
+        border-radius: var(--y-win-border-radius, var(--y-win-dialog-radius)) var(--y-win-border-radius, var(--y-win-dialog-radius)) 0 0;
+        transition: translate var(--y-win-enter);
+    }
+
+    .y-win__wrapper.sheet.is-hidden .y-win {
+        scale: 1;
+        translate: 0 100%;
+        transition: translate var(--y-win-exit);
+    }
+
+    .y-win__wrapper.sheet .y-win__handle {
+        display: block;
+        flex-shrink: 0;
+        width: 36px;
+        height: 4px;
+        margin: 8px auto 0;
+        border-radius: 2px;
+        background: var(--y-win-action-bg-hover);
+    }
+
+    .y-win__wrapper.sheet .y-win__header {
+        border-bottom: none;
+    }
+
+    .y-win__wrapper.sheet .y-win__header:has(> .y-win__header-body.y-win__header-empty) {
+        display: none;
+    }
+
+    .y-win__wrapper.sheet .y-win__header:has(> .y-win__header-body.y-win__header-empty) + .y-win__body {
+        padding-top: 8px;
+    }
 }

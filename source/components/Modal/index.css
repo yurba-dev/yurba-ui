@@ -1,14 +1,26 @@
+/* Tokens */
+
+/* Keep --y-win-border-radius unset: it overrides dialogs and menus */
 :root {
     --y-win-backdrop: #00000070;
-    --y-win-bg: white;
-    --y-win-text: black;
-    --y-win-bg-transparent: #ffffff99;
-    --y-win-header-padding: 15px;
-    --y-win-body-padding: 15px;
-    --y-win-action-bg: #0000000f;
-    --y-win-action-bg-hover: #00000026;
-    --y-win-border-radius: 10px;
-    --y-win-divider: #0000000a;
+    --y-win-bg: var(--yurba-main-color, white);
+    --y-win-text: var(--yurba-text-color, black);
+    --y-win-bg-transparent: var(--yurba-main-color-opacity, #ffffff99);
+    --y-win-header-padding: 16px;
+    --y-win-body-padding: 16px;
+    --y-win-action-bg: var(--yurba-hover-color, #0000000f);
+    --y-win-action-bg-hover: var(--yurba-fill-color, #00000026);
+    --y-win-dialog-radius: var(--yurba-radius-xl, 20px);
+    --y-win-menu-radius: var(--yurba-radius-l, 14px);
+    --y-win-item-radius: var(--yurba-radius-m, 10px);
+    --y-win-divider: var(--yurba-border-color, #0000000a);
+    --y-win-accent: var(--yurba-brand-color, #3b6fff);
+    --y-win-accent-bg: var(--yurba-brand-color-opacity, #3b6fff25);
+    --y-win-danger: var(--yurba-red-color, #ff4444);
+    --y-win-shadow-menu: var(--yurba-shadow-menu, 0 6px 24px rgb(0 0 0 / 14%));
+    --y-win-shadow-dialog: var(--yurba-shadow-dialog, 0 12px 40px rgb(0 0 0 / 20%));
+    --y-win-enter: .2s cubic-bezier(.05, .7, .1, 1);
+    --y-win-exit: .15s ease;
     --y-win-footer-h: 50px;
     --y-win-zindex: 9999;
 }
@@ -16,6 +28,8 @@
 body {
     margin: 0;
 }
+
+/* Window */
 
 .y-win__wrapper {
     position: fixed;
@@ -27,26 +41,36 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: .2s;
+    transition: opacity var(--y-win-enter);
     z-index: var(--y-win-zindex);
 }
 
 .y-win__wrapper.is-hidden {
     opacity: 0;
     pointer-events: none;
+    transition: opacity var(--y-win-exit);
 }
 
 .y-win {
     width: 400px;
     max-height: 85vh;
     background: var(--y-win-bg);
-    border-radius: var(--y-win-border-radius);
-    box-shadow: #0000001c 0px 2px 3px 0px;
+    color: var(--y-win-text);
+    font-family: inherit;
+    border-radius: var(--y-win-border-radius, var(--y-win-dialog-radius));
+    box-shadow: var(--y-win-shadow-dialog);
     position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: var(--y-win-zindex);
+    transition: scale var(--y-win-enter);
+}
+
+/* scale, not transform: positioning owns transform */
+.y-win__wrapper.is-hidden .y-win {
+    scale: .96;
+    transition: scale var(--y-win-exit);
 }
 
 .y-win__body::-webkit-scrollbar {
@@ -55,30 +79,40 @@ body {
 }
 
 .y-win__body::-webkit-scrollbar-track {
-    border-radius: 100px;
+    border-radius: var(--yurba-radius-pill, 100px);
 }
 
 .y-win__body::-webkit-scrollbar-thumb {
-    background: rgb(209, 209, 209);
-    border-radius: 100px;
+    background: var(--y-win-action-bg-hover);
+    border-radius: var(--yurba-radius-pill, 100px);
 }
 
 .y-win__body::-webkit-scrollbar-thumb:hover {
-    background: rgb(182, 182, 182);
+    background: var(--yurba-placeholder-color, #0000004f);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .y-win__wrapper.is-hidden .y-win {
+        scale: 1;
+    }
+}
+
+/* Header */
 
 .y-win__header {
     font-size: 15px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     flex-shrink: 0;
     padding: var(--y-win-header-padding);
     border-bottom: 1px solid var(--y-win-divider);
     background: var(--y-win-bg-transparent);
     backdrop-filter: blur(10px);
     z-index: 9;
-    border-radius: var(--y-win-border-radius) var(--y-win-border-radius) 0px 0px;
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .y-win__header .y-win__header-body {
@@ -93,13 +127,13 @@ body {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
 }
 
 .y-win__controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .y-win__controls:empty {
@@ -108,27 +142,73 @@ body {
 
 .y-win__close {
     all: unset;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--y-win-action-bg);
-    border-radius: 100%;
-    padding: 7px;
+    width: 36px;
+    height: 36px;
+    margin: -6px -6px -6px 0;
+    background: transparent;
+    border-radius: 50%;
     cursor: pointer;
     user-select: none;
     color: inherit;
     flex-shrink: 0;
+    transition: background .15s ease;
+}
+
+.y-win__close svg {
+    width: 12px;
+    height: 12px;
 }
 
 .y-win__close:hover {
+    background: var(--y-win-action-bg);
+}
+
+.y-win__close:active {
     background: var(--y-win-action-bg-hover);
 }
+
+.y-win__close:focus-visible {
+    outline: 2px solid var(--y-win-accent);
+    outline-offset: 2px;
+}
+
+/* Header on phones */
+
+/* A title and its controls don't fit one row: the title keeps the row with the close button, the controls go under it */
+@media (max-width: 576px) {
+    .y-win__header:has(.y-win__controls:not(:empty)) {
+        flex-wrap: wrap;
+        row-gap: 10px;
+    }
+
+    .y-win__header:has(.y-win__controls:not(:empty)) .y-win__header-actions {
+        display: contents;
+    }
+
+    .y-win__header:has(.y-win__controls:not(:empty)) .y-win__close {
+        order: 1;
+    }
+
+    .y-win__header:has(.y-win__controls:not(:empty)) .y-win__controls {
+        order: 2;
+        flex: 1 0 100%;
+        flex-wrap: wrap;
+    }
+}
+
+/* Body */
 
 .y-win__body {
     flex: 1;
     overflow: auto;
     padding: var(--y-win-body-padding);
 }
+
+/* Footer */
 
 .y-win__footer-wrapper {
     flex-shrink: 0;
@@ -140,7 +220,9 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 0px 0px var(--y-win-border-radius) var(--y-win-border-radius);
+    border-radius: inherit;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 .y-win__footer-wrapper:has(.y-win__footer:empty) {

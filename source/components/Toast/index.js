@@ -3,11 +3,23 @@ import { TitleComponent } from "../Title/index.js"
 import { TitleIconComponent } from "../TitleIcon/index.js"
 import { Group } from "../Group/index.js"
 
+function toastStack() {
+    let stack = document.querySelector("body > .y-win__toasts")
+    if (!stack) {
+        stack = document.createElement("div")
+        stack.className = "y-win__toasts"
+    }
+    if (document.body.lastElementChild != stack) document.body.appendChild(stack)
+    return stack
+}
+
 export class Toast extends Modal {
     constructor(properties = {}) {
-        super()
+        // A page click must not drop a loading toast
+        super({ ...properties, closeOnOutsideClick: properties.closeOnOutsideClick ?? false })
         this.type = "toast"
         this.timeout = properties.timeout ?? 2000
+        this.stacked = !("parent" in properties)
 
         this.addSetupHook(modal => {
             modal.setAttribute("type", "toast")
@@ -28,6 +40,7 @@ export class Toast extends Modal {
     }
 
     show() {
+        if (this.stacked) this.properties.parent = toastStack()
         super.show()
         this.hideOnTimeout(this.timeout, { notHideWhenHovered: true })
     }

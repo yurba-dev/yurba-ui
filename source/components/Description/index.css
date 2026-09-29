@@ -1,4 +1,7 @@
+/* Description */
+
 .y-win__desc {
     font-size: 12px;
-    opacity: .5;
+    line-height: 1.4;
+    opacity: .6;
 }

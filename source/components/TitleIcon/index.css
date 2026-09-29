@@ -1,9 +1,12 @@
+/* TitleIcon */
+
 .y-win__title-icon {
     font-size: 18px!important;
     background: var(--y-win-action-bg);
-    border-radius: 100%;
-    width: 20px;
-    height: 20px;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
     display: flex!important;
     align-items: center;
     justify-content: center;

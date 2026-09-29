@@ -71,7 +71,7 @@ sizes.forEach(s => {
     const chip = document.createElement('button')
     chip.textContent = s
     chip.dataset.size = s
-    chip.style.cssText = `all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:6px 14px;border-radius:20px;border:1.5px solid #e5e5ea;background:${s == currentSize ? '#0071e3' : '#fff'};color:${s == currentSize ? '#fff' : '#1d1d1f'};transition:.15s`
+    chip.style.cssText = `all:unset;box-sizing:border-box;cursor:pointer;font-size:13px;font-weight:500;padding:6px 14px;border-radius:20px;border:1.5px solid #e5e5ea;background:${s == currentSize ? '#0071e3' : '#fff'};color:${s == currentSize ? '#fff' : '#1d1d1f'};transition:.15s`
     chip.addEventListener('click', () => {
         sizeModal.setSize(s)
         currentSize = s
@@ -100,23 +100,23 @@ boundModal.bind('bound-modal')
 
 document.getElementById('btn-toast-default').addEventListener('click', () => {
     const t = new YurbaUI.Toast({ title: 'Notification' })
-    t.setPosition('top-right'); t.show()
-    log('new YurbaUI.Toast — default')
+    t.show()
+    log('new YurbaUI.Toast - default')
 })
 document.getElementById('btn-toast-success').addEventListener('click', () => {
     const t = new YurbaUI.Toast({ title: 'Saved successfully', icon: '<span class="material-symbols-rounded">check</span>', iconType: 'success' })
-    t.setPosition('top-right'); t.show()
-    log('new YurbaUI.Toast — success')
+    t.show()
+    log('new YurbaUI.Toast - success')
 })
 document.getElementById('btn-toast-danger').addEventListener('click', () => {
     const t = new YurbaUI.Toast({ title: 'Something went wrong', icon: '<span class="material-symbols-rounded">exclamation</span>', iconType: 'danger' })
-    t.setPosition('top-right'); t.show()
-    log('new YurbaUI.Toast — danger')
+    t.show()
+    log('new YurbaUI.Toast - danger')
 })
 document.getElementById('btn-toast-warn').addEventListener('click', () => {
-    const t = new YurbaUI.Toast({ title: 'Check your input', icon: '<span class="material-symbols-rounded">exclamation</span>', iconType: 'warn' })
-    t.setPosition('top-right'); t.show()
-    log('new YurbaUI.Toast — warn')
+    const t = new YurbaUI.Toast({ title: 'Check your input', icon: '<span class="material-symbols-rounded">exclamation</span>', iconType: 'warning' })
+    t.show()
+    log('new YurbaUI.Toast - warn')
 })
 
 new YurbaUI.Tooltip(document.getElementById('tt-top'), { pos: 'top', title: 'Tooltip', content: 'Positioned on top' })
@@ -252,7 +252,6 @@ document.getElementById('btn-context-manual').addEventListener('click', (e) => {
     demoContextManual.open(r.left, r.bottom + 4)
     log('contextMenu.open(x, y)')
 })
-// sidebar active link tracking
 const sections = document.querySelectorAll('main section[id]')
 const links    = document.querySelectorAll('.sidebar a')
 

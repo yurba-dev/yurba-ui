@@ -45,6 +45,31 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 | `YurbaUI.MaterialIcon` | Material Symbols wrapper |
 | `YurbaUI.YurbaIcon` | Yurba icon font wrapper |
 
+## Icons
+
+Icons the library draws itself live in a static `icons` map (key -> HTML string), like `labels`. Set a key once per site; keys left out keep the default. Values are inserted as HTML as given.
+
+```js
+YurbaUI.Modal.icons.close = '<span class="material-symbols-rounded">close</span>'
+YurbaUI.Dropdown.icons.check = '<span class="material-symbols-rounded">done</span>'
+
+// One instance only
+new YurbaUI.Select(options, { icons: { arrow: '<span class="material-symbols-rounded">expand_more</span>' } })
+```
+
+| Component | Key | Default |
+|---|---|---|
+| `Modal` | `close` | Cross SVG in the close button |
+| `Select` | `arrow` | Chevron SVG in the trigger |
+| `Select` | `check` | `''`: the tick drawn in CSS on a selected multi-select item |
+| `Dropdown`, `ContextMenu` | `arrow` | `›` on an item with a submenu |
+| `Dropdown`, `ContextMenu` | `check` | Material `check` on an `active` item |
+
+- `Toast` uses `Modal.icons`.
+- `Dropdown.icons` and `ContextMenu.icons` are one object (it also covers the mobile sheet), so set a key on either one.
+- A menu `check` that is one element gets the `y-dropdown__item-check` class; anything else is wrapped in a span with it.
+- `Modal`, `Toast`, `Select`, `Dropdown` and `ContextMenu` also take an `icons` option for a single instance.
+
 ## Examples
 
 ```js
@@ -67,6 +92,10 @@ modal.renderComponent(new YurbaUI.Text('Body text'), 'body')
 
 modal.show()
 
+// On a phone or tablet (up to 1280px) every modal fills the screen; a short one (a confirmation,
+// a single field) passes compact: true to stay a card
+const ask = new YurbaUI.Modal({ compact: true })
+
 // Toast
 new YurbaUI.Toast({ title: 'Saved', iconType: 'success', timeout: 3000 }).show()
 
@@ -81,7 +110,7 @@ container.appendChild(el)
 select.onChange(value => console.log(value))                 // callback API
 el.addEventListener('yurba-select:change', e => console.log(e.detail.value)) // DOM event
 // The event bubbles; detail is { value, option } (single) or { values, options } (multi).
-// Only a user selection fires it — setValue() stays silent, like a native <select>.
+// Only a user selection fires it - setValue() stays silent, like a native <select>.
 
 // Dropdown
 const dropdown = new YurbaUI.Dropdown(
