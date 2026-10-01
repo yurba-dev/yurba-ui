@@ -1804,6 +1804,67 @@ var __yurbaui__ = (() => {
     static closeAll() {
       _ContextMenuComponent._open.forEach((menu) => menu.close());
     }
+    // For a menu made at the moment it opens: open(e) builds and opens it, and a long press works as on bind()
+    static attach(target, open) {
+      _ContextMenuComponent.enableLongPress();
+      target.classList.add(_ContextMenuComponent.TARGET);
+      target.addEventListener("contextmenu", (e) => {
+        if (open(e) == false) return;
+        e.preventDefault();
+      });
+    }
+    // A phone sends no contextmenu for a long press on text (Android starts a selection, iOS never sends one), so
+    // on a touch screen the press itself becomes one, inside anything marked with TARGET. Pages with their own
+    // contextmenu listener mark their element too
+    static enableLongPress() {
+      if (_ContextMenuComponent._touch) return;
+      _ContextMenuComponent._touch = true;
+      const HOLD = 450;
+      const SLOP = 10;
+      let timer = 0;
+      let start = null;
+      let pressedAt = 0;
+      let fired = false;
+      function cancel() {
+        clearTimeout(timer);
+        timer = 0;
+        start = null;
+      }
+      document.addEventListener("touchstart", (e) => {
+        cancel();
+        if (e.touches.length != 1) return;
+        const target = e.target instanceof Element ? e.target.closest("." + _ContextMenuComponent.TARGET) : null;
+        if (!target) return;
+        const touch = e.touches[0];
+        start = { x: touch.clientX, y: touch.clientY, node: e.target };
+        timer = setTimeout(() => {
+          var _a;
+          const at = start;
+          cancel();
+          if (!(at == null ? void 0 : at.node.isConnected)) return;
+          pressedAt = Date.now();
+          fired = true;
+          (_a = navigator.vibrate) == null ? void 0 : _a.call(navigator, 10);
+          at.node.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: at.x, clientY: at.y }));
+        }, HOLD);
+      }, { passive: true });
+      document.addEventListener("touchmove", (e) => {
+        const touch = e.touches[0];
+        if (start && touch && Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > SLOP) cancel();
+      }, { passive: true });
+      document.addEventListener("touchend", (e) => {
+        if (fired) e.preventDefault();
+        fired = false;
+        cancel();
+      });
+      document.addEventListener("touchcancel", cancel);
+      document.addEventListener("contextmenu", (e) => {
+        if (e.isTrusted && Date.now() - pressedAt < 1e3) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
     constructor(items = [], properties = {}) {
       super();
       this._items = items;
@@ -1837,7 +1898,10 @@ var __yurbaui__ = (() => {
       } else {
         targets = [target];
       }
+      _ContextMenuComponent.enableLongPress();
       targets.forEach((t) => {
+        var _a;
+        (_a = t.classList) == null ? void 0 : _a.add(_ContextMenuComponent.TARGET);
         t.addEventListener("contextmenu", (e) => {
           e.preventDefault();
           this.open(e.clientX, e.clientY, t);
@@ -1955,6 +2019,8 @@ var __yurbaui__ = (() => {
   };
   __publicField(_ContextMenuComponent, "icons", menuIcons);
   __publicField(_ContextMenuComponent, "_open", /* @__PURE__ */ new Set());
+  __publicField(_ContextMenuComponent, "TARGET", "y-context-target");
+  __publicField(_ContextMenuComponent, "_touch", false);
   var ContextMenuComponent = _ContextMenuComponent;
 
   // source/components/Readmore/index.js

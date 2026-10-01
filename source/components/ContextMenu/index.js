@@ -10,6 +10,75 @@ export class ContextMenuComponent extends BaseComponent {
         ContextMenuComponent._open.forEach((menu) => menu.close())
     }
 
+    static TARGET = "y-context-target"
+    static _touch = false
+
+    // For a menu made at the moment it opens: open(e) builds and opens it, and a long press works as on bind()
+    static attach(target, open) {
+        ContextMenuComponent.enableLongPress()
+        target.classList.add(ContextMenuComponent.TARGET)
+        target.addEventListener("contextmenu", (e) => {
+            if (open(e) == false) return
+            e.preventDefault()
+        })
+    }
+
+    // A phone sends no contextmenu for a long press on text (Android starts a selection, iOS never sends one), so
+    // on a touch screen the press itself becomes one, inside anything marked with TARGET. Pages with their own
+    // contextmenu listener mark their element too
+    static enableLongPress() {
+        if (ContextMenuComponent._touch) return
+        ContextMenuComponent._touch = true
+        const HOLD = 450
+        const SLOP = 10
+        let timer = 0
+        let start = null
+        let pressedAt = 0
+        let fired = false
+
+        function cancel() {
+            clearTimeout(timer)
+            timer = 0
+            start = null
+        }
+
+        document.addEventListener("touchstart", (e) => {
+            cancel()
+            if (e.touches.length != 1) return
+            const target = e.target instanceof Element ? e.target.closest("." + ContextMenuComponent.TARGET) : null
+            if (!target) return
+            const touch = e.touches[0]
+            start = { x: touch.clientX, y: touch.clientY, node: e.target }
+            timer = setTimeout(() => {
+                const at = start
+                cancel()
+                if (!at?.node.isConnected) return
+                pressedAt = Date.now()
+                fired = true
+                navigator.vibrate?.(10)
+                at.node.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: at.x, clientY: at.y }))
+            }, HOLD)
+        }, { passive: true })
+        document.addEventListener("touchmove", (e) => {
+            const touch = e.touches[0]
+            if (start && touch && Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > SLOP) cancel()
+        }, { passive: true })
+        document.addEventListener("touchend", (e) => {
+            // The finger lifting after the menu opened would be a tap, and a tap outside closes the menu
+            if (fired) e.preventDefault()
+            fired = false
+            cancel()
+        })
+        document.addEventListener("touchcancel", cancel)
+        // Android may send its own contextmenu for the same press; the one made here already opened the menu
+        document.addEventListener("contextmenu", (e) => {
+            if (e.isTrusted && Date.now() - pressedAt < 1000) {
+                e.preventDefault()
+                e.stopImmediatePropagation()
+            }
+        }, true)
+    }
+
     constructor(items = [], properties = {}) {
         super()
         this._items = items
@@ -46,7 +115,9 @@ export class ContextMenuComponent extends BaseComponent {
             targets = [target]
         }
 
+        ContextMenuComponent.enableLongPress()
         targets.forEach(t => {
+            t.classList?.add(ContextMenuComponent.TARGET)
             t.addEventListener("contextmenu", (e) => {
                 e.preventDefault()
                 this.open(e.clientX, e.clientY, t)

@@ -8,6 +8,9 @@
 /* Safari on a phone paints a button's text its system blue unless told otherwise */
 .y-dropdown__trigger {
     color: inherit;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 /* Menu */
@@ -24,6 +27,9 @@
     border-radius: var(--y-win-border-radius, var(--y-win-menu-radius));
     box-shadow: var(--y-win-shadow-menu);
     z-index: 9999;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     opacity: 0;
     transform: scale(.96);
     transform-origin: top;
@@ -207,6 +213,16 @@
     color: var(--y-win-text);
     font-family: inherit;
     transition: transform var(--y-win-exit);
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* A field in a menu stays editable: iOS Safari would not let a non-selectable one be typed in */
+.y-dropdown__menu :is(input, textarea, [contenteditable="true"]),
+.y-sheet__panel :is(input, textarea, [contenteditable="true"]) {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .y-sheet--top .y-sheet__panel {

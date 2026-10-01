@@ -10,6 +10,9 @@
     border-radius: var(--y-win-border-radius, var(--y-win-menu-radius));
     box-shadow: var(--y-win-shadow-menu);
     z-index: 10000;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     padding: 6px;
     opacity: 1;
     transform: scale(1);
@@ -28,4 +31,19 @@
     max-height: calc(100vh - 16px);
     overflow-y: auto;
     overscroll-behavior: contain;
+}
+
+/* A long press opens the menu on a touch screen, so it must not start a selection or the system's callout first */
+@media (pointer: coarse) {
+    .y-context-target {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    .y-context-target :is(input, textarea, [contenteditable="true"]),
+    .y-context-menu :is(input, textarea, [contenteditable="true"]) {
+        -webkit-user-select: text;
+        user-select: text;
+    }
 }
