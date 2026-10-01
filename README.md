@@ -35,6 +35,7 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 | `YurbaUI.Dropdown` | Trigger-anchored menu or custom panel (icons, separators, nested submenus) |
 | `YurbaUI.ContextMenu` | Right-click menu opened at the cursor (same item model as Dropdown) |
 | `YurbaUI.Readmore` | Expandable text block with "Read more / Less" toggles |
+| `YurbaUI.Scrollbar` | Overlay scrollbar thumb that replaces the native one |
 | `YurbaUI.Group` | Component group |
 | `YurbaUI.Title` | Title component |
 | `YurbaUI.Description` | Subtitle component |
@@ -135,6 +136,16 @@ new YurbaUI.Readmore(document.querySelector('.post-content'), {
     moreText: 'Read more',
     lessText: 'Read less',
 })
+
+// Scrollbar: the element keeps its own overflow, the native bar is hidden
+YurbaUI.Scrollbar.attach(document.querySelector('.list'))
+YurbaUI.Scrollbar.detach(document.querySelector('.list'))
+// Every [data-y-scrollbar] and every match of the selectors, now and later
+YurbaUI.Scrollbar.auto('.scrollable, .y-win__body')
+// Sticky headers inside a scroller that the thumb starts below
+YurbaUI.Scrollbar.sticky = '[data-y-scrollbar-sticky]'
 ```
+
+Scrollbar tokens: `--y-scrollbar-color`, `--y-scrollbar-radius`, `--y-scrollbar-width`, `--y-scrollbar-width-hover`, `--y-scrollbar-opacity`, `--y-scrollbar-opacity-hover`.
 
 See [demo](https://yurba-dev.github.io/yurba-ui/) for full documentation.

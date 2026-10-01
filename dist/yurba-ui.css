@@ -892,6 +892,11 @@ body {
     display: inline-flex;
 }
 
+/* Safari on a phone paints a button's text its system blue unless told otherwise */
+.y-dropdown__trigger {
+    color: inherit;
+}
+
 /* Menu */
 
 .y-dropdown__menu {
@@ -1255,4 +1260,69 @@ body {
     .y-readmore {
         transition: none;
     }
+}
+
+
+/* Scrollbar */
+
+:root {
+    --y-scrollbar-color: var(--yurba-text-color, #000);
+    --y-scrollbar-radius: var(--yurba-radius-pill, 100px);
+    --y-scrollbar-width: 4px;
+    --y-scrollbar-width-hover: 6px;
+    --y-scrollbar-opacity: .3;
+    --y-scrollbar-opacity-hover: .5;
+}
+
+/* html outranks a library's own scrollbar-width on the same element */
+html [data-y-scrollbar] {
+    scrollbar-width: none;
+}
+
+html [data-y-scrollbar]::-webkit-scrollbar {
+    display: none;
+}
+
+.y-scrollbar {
+    position: fixed;
+    top: 0;
+    /* Raised per scroller above the layer it sits in */
+    z-index: 1000;
+    width: var(--y-scrollbar-width);
+    border-radius: var(--y-scrollbar-radius);
+    background: var(--y-scrollbar-color);
+    opacity: 0;
+    cursor: grab;
+    pointer-events: none;
+    transition: opacity .3s, width .15s;
+}
+
+.y-scrollbar[hidden] {
+    display: none;
+}
+
+/* Wider hit area than the bar */
+.y-scrollbar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -6px;
+    right: -3px;
+}
+
+/* A hidden thumb must not swallow clicks */
+.y-scrollbar.is-visible {
+    opacity: var(--y-scrollbar-opacity);
+    pointer-events: auto;
+}
+
+.y-scrollbar:hover,
+.y-scrollbar.is-dragging {
+    width: var(--y-scrollbar-width-hover);
+    opacity: var(--y-scrollbar-opacity-hover);
+}
+
+.y-scrollbar.is-dragging {
+    cursor: grabbing;
 }

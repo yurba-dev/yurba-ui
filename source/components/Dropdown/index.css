@@ -5,6 +5,11 @@
     display: inline-flex;
 }
 
+/* Safari on a phone paints a button's text its system blue unless told otherwise */
+.y-dropdown__trigger {
+    color: inherit;
+}
+
 /* Menu */
 
 .y-dropdown__menu {

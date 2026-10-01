@@ -912,6 +912,7 @@ var __yurbaui__ = (() => {
       super();
       this.el = document.createElement("span");
       this.el.classList.add("material-symbols-rounded");
+      this.el.translate = false;
       this.el.textContent = name;
       this.placement = "body";
     }
@@ -2021,6 +2022,250 @@ var __yurbaui__ = (() => {
     }
   };
 
+  // source/components/Scrollbar/index.js
+  var instances2 = /* @__PURE__ */ new WeakMap();
+  var attached = /* @__PURE__ */ new Set();
+  var autoSelectors = /* @__PURE__ */ new Set(["[data-y-scrollbar]"]);
+  var observer = null;
+  var MIN_OVERFLOW = 8;
+  var MIN_THUMB = 32;
+  var INSET = 3;
+  var FADE = 400;
+  function autoSelector() {
+    return [...autoSelectors].join(", ");
+  }
+  function scan(node) {
+    if (node.nodeType != 1) return;
+    const selector = autoSelector();
+    if (node.matches(selector)) Scrollbar.attach(node);
+    node.querySelectorAll(selector).forEach((el) => Scrollbar.attach(el));
+  }
+  function dropDetached() {
+    attached.forEach((scroller) => {
+      var _a;
+      if (!scroller.isConnected) (_a = instances2.get(scroller)) == null ? void 0 : _a.destroy();
+    });
+  }
+  function observe() {
+    if (observer) return;
+    if (!document.body) {
+      document.addEventListener("DOMContentLoaded", function ready() {
+        observe();
+        scan(document.body);
+      }, { once: true });
+      return;
+    }
+    observer = new MutationObserver((mutations) => {
+      let removed = false;
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach(scan);
+        if (mutation.removedNodes.length) removed = true;
+      });
+      if (removed) dropDetached();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+  var _Scrollbar = class _Scrollbar {
+    static attach(scroller) {
+      if (!scroller || scroller.nodeType != 1) return null;
+      if (!scroller.hasAttribute("data-y-scrollbar")) scroller.setAttribute("data-y-scrollbar", "");
+      observe();
+      if (!scroller.isConnected) return null;
+      return instances2.get(scroller) || new _Scrollbar(scroller);
+    }
+    static detach(scroller) {
+      var _a;
+      if (!scroller) return;
+      (_a = instances2.get(scroller)) == null ? void 0 : _a.destroy();
+      scroller.removeAttribute("data-y-scrollbar");
+    }
+    static get(scroller) {
+      return instances2.get(scroller) || null;
+    }
+    // Attaches to every match, now and later
+    static auto(selector = "") {
+      selector.split(",").map((part) => part.trim()).filter(Boolean).forEach((part) => autoSelectors.add(part));
+      observe();
+      if (document.body) scan(document.body);
+    }
+    constructor(scroller) {
+      this.scroller = scroller;
+      this.thumb = document.createElement("div");
+      this.thumb.className = "y-scrollbar";
+      this.thumb.hidden = true;
+      document.body.appendChild(this.thumb);
+      this.listeners = new AbortController();
+      this.frame = 0;
+      this.hideTimer = null;
+      this.hovering = false;
+      this.dragging = false;
+      this.overlayTop = 0;
+      this.fadingUntil = 0;
+      this.follow = this.follow.bind(this);
+      this.show = this.show.bind(this);
+      instances2.set(scroller, this);
+      attached.add(scroller);
+      this.bind();
+    }
+    bind() {
+      const { scroller, thumb } = this;
+      const { signal } = this.listeners;
+      const self = this;
+      scroller.addEventListener("scroll", this.show, { signal });
+      scroller.addEventListener("mouseenter", this.show, { signal });
+      thumb.addEventListener("mouseenter", function enter() {
+        self.hovering = true;
+        self.show();
+      });
+      thumb.addEventListener("mouseleave", function leave() {
+        self.hovering = false;
+        if (!self.isCovered()) return self.show();
+        clearTimeout(self.hideTimer);
+        thumb.classList.remove("is-visible");
+        self.fadingUntil = performance.now() + FADE;
+        self.schedule();
+      });
+      thumb.addEventListener("pointerdown", function down(e) {
+        e.preventDefault();
+        self.dragging = true;
+        thumb.classList.add("is-dragging");
+        thumb.setPointerCapture(e.pointerId);
+        const startY = e.clientY;
+        const startTop = scroller.scrollTop;
+        function move(event) {
+          const { scrollHeight, clientHeight } = scroller;
+          const ratio = (scrollHeight - clientHeight) / Math.max(1, self.track().height - thumb.offsetHeight);
+          scroller.scrollTop = startTop + (event.clientY - startY) * ratio;
+        }
+        function up() {
+          self.dragging = false;
+          thumb.classList.remove("is-dragging");
+          thumb.removeEventListener("pointermove", move);
+          thumb.removeEventListener("pointerup", up);
+          thumb.removeEventListener("pointercancel", up);
+          self.show();
+        }
+        thumb.addEventListener("pointermove", move);
+        thumb.addEventListener("pointerup", up);
+        thumb.addEventListener("pointercancel", up);
+      });
+    }
+    destroy() {
+      this.listeners.abort();
+      clearTimeout(this.hideTimer);
+      cancelAnimationFrame(this.frame);
+      this.thumb.remove();
+      instances2.delete(this.scroller);
+      attached.delete(this.scroller);
+    }
+    // The scroller moved to another layer, e.g. into a full-screen mode
+    refresh() {
+      this.measureSurroundings();
+      if (this.thumb.classList.contains("is-visible")) this.schedule();
+    }
+    // Overlays pinned over the top of the scroller, and the layer it sits in
+    measureSurroundings() {
+      const { scroller } = this;
+      const rect = scroller.getBoundingClientRect();
+      const x = rect.right - 24;
+      this.overlayTop = 0;
+      let y = rect.top + 1;
+      while (y < rect.top + rect.height / 2) {
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || scroller.contains(hit)) break;
+        const bottom = hit.getBoundingClientRect().bottom;
+        if (bottom <= y) break;
+        this.overlayTop = bottom - rect.top;
+        y = bottom + 1;
+      }
+      let layer = 0;
+      for (let node = scroller; node && node != document.body; node = node.parentElement) {
+        const zIndex = parseInt(getComputedStyle(node).zIndex);
+        if (zIndex > layer) layer = zIndex;
+      }
+      this.thumb.style.zIndex = Math.max(_Scrollbar.zIndex, layer + 1);
+    }
+    track() {
+      const { scroller } = this;
+      const header = _Scrollbar.sticky ? scroller.querySelector(_Scrollbar.sticky) : null;
+      const style = header ? getComputedStyle(header) : null;
+      const sticky = (style == null ? void 0 : style.position) == "sticky" ? (parseFloat(style.top) || 0) + header.offsetHeight : 0;
+      const offset = Math.max(sticky, this.overlayTop);
+      return { top: offset + INSET, height: scroller.clientHeight - offset - INSET * 2 };
+    }
+    update() {
+      var _a;
+      const { scroller, thumb } = this;
+      if (!scroller.isConnected) {
+        thumb.hidden = true;
+        return;
+      }
+      const { scrollHeight, clientHeight, scrollTop } = scroller;
+      const { top: trackTop, height: trackHeight } = this.track();
+      const shown = ((_a = scroller.checkVisibility) == null ? void 0 : _a.call(scroller, { visibilityProperty: true, opacityProperty: true })) ?? true;
+      if (clientHeight == 0 || !shown || scroller.closest(".is-hidden") || scrollHeight - clientHeight < MIN_OVERFLOW || trackHeight < MIN_THUMB) {
+        thumb.hidden = true;
+        return;
+      }
+      const rect = scroller.getBoundingClientRect();
+      if (!this.dragging && (rect.right <= 0 || rect.left >= innerWidth || this.isCovered())) {
+        thumb.hidden = true;
+        return;
+      }
+      const height = Math.min(trackHeight, Math.max(MIN_THUMB, trackHeight * clientHeight / scrollHeight));
+      const max = scrollHeight - clientHeight;
+      const progress = getComputedStyle(scroller).flexDirection == "column-reverse" ? 1 + scrollTop / max : scrollTop / max;
+      const top = rect.top + trackTop + (trackHeight - height) * Math.min(1, Math.max(0, progress));
+      thumb.hidden = false;
+      thumb.style.height = `${height}px`;
+      thumb.style.left = `${rect.right}px`;
+      thumb.style.transform = `translate(calc(-100% - ${INSET}px), ${top}px)`;
+    }
+    // Polled per frame: layout changes fire no event
+    follow() {
+      const { thumb } = this;
+      this.update();
+      const onScreen = thumb.classList.contains("is-visible") || performance.now() < this.fadingUntil;
+      if (thumb.hidden || !onScreen) {
+        this.frame = 0;
+        if (thumb.hidden) {
+          this.hovering = false;
+          thumb.classList.remove("is-visible");
+        }
+        return;
+      }
+      this.frame = requestAnimationFrame(this.follow);
+    }
+    schedule() {
+      if (!this.frame) this.frame = requestAnimationFrame(this.follow);
+    }
+    // Opening a modal can fire scroll behind it (scroll anchoring)
+    isCovered() {
+      const { scroller } = this;
+      const rect = scroller.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.right - 24, rect.top + rect.height / 2);
+      return !!hit && !scroller.contains(hit);
+    }
+    show() {
+      const { thumb } = this;
+      if (!this.hovering && !this.dragging && this.isCovered()) return;
+      if (!thumb.classList.contains("is-visible")) this.measureSurroundings();
+      this.schedule();
+      thumb.classList.add("is-visible");
+      clearTimeout(this.hideTimer);
+      this.hideTimer = setTimeout(() => {
+        if (!this.scroller.isConnected) thumb.hidden = true;
+        if (this.hovering || this.dragging) return;
+        thumb.classList.remove("is-visible");
+        this.fadingUntil = performance.now() + FADE;
+      }, 1e3);
+    }
+  };
+  // Sticky headers inside a scroller: the track starts below them
+  __publicField(_Scrollbar, "sticky", "[data-y-scrollbar-sticky]");
+  __publicField(_Scrollbar, "zIndex", 1e3);
+  var Scrollbar = _Scrollbar;
+
   // source/index.js
   var YurbaUI = {
     Modal,
@@ -2038,7 +2283,8 @@ var __yurbaui__ = (() => {
     MaterialIcon: MaterialIconComponent,
     YurbaIcon: YurbaIconComponent,
     Group,
-    Readmore
+    Readmore,
+    Scrollbar
   };
   return __toCommonJS(index_exports);
 })();
