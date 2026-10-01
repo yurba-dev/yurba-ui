@@ -1,22 +1,6 @@
 import { itemRow, tidyItems, menuIcons } from "../../helpers/menu.js"
 
-function bars(trigger, anchor) {
-    const win = trigger?.closest(".y-win")
-    const header = anchor ?? win?.querySelector(".y-win__header")
-    const edge = header?.offsetHeight ? header : win
-    if (edge) {
-        return { top: Math.max(0, Math.floor(edge.getBoundingClientRect()[header?.offsetHeight ? "bottom" : "top"]) - 1), bottom: 0 }
-    }
-    const probe = document.createElement("div")
-    probe.style.cssText = "position: fixed; visibility: hidden; top: var(--y-win-sheet-top, 0px); bottom: var(--y-win-sheet-bottom, 0px)"
-    document.body.appendChild(probe)
-    const style = getComputedStyle(probe)
-    const result = { top: parseFloat(style.top) || 0, bottom: parseFloat(style.bottom) || 0 }
-    probe.remove()
-    return result
-}
-
-export function openSheet(items, { trigger = null, at = null, anchor = null, onClose = null, icons = menuIcons } = {}) {
+export function openSheet(items, { trigger = null, at = null, onClose = null, icons = menuIcons } = {}) {
     const layer = document.createElement("div")
     const panel = document.createElement("div")
     panel.className = "y-sheet__panel"
@@ -28,12 +12,8 @@ export function openSheet(items, { trigger = null, at = null, anchor = null, onC
     const seen = window.visualViewport?.height ?? window.innerHeight
     const middle = at ?? (box ? box.top + box.height / 2 : 0)
     const top = middle < seen / 2
-    const edges = bars(trigger, anchor)
-    if (!top && !anchor && trigger?.closest(".y-win")) edges.top = 0
+    // Over the whole screen, the page's bars too: a sheet comes from the screen's top or bottom edge
     layer.className = "y-sheet " + (top ? "y-sheet--top" : "y-sheet--bottom")
-    layer.style.top = edges.top + "px"
-    layer.style.bottom = edges.bottom + "px"
-    if (!top && edges.bottom == 0) panel.classList.add("y-sheet__panel--edge")
 
     function close() {
         if (!open) return

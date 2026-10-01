@@ -36,6 +36,11 @@ export class ContextMenuComponent extends BaseComponent {
         let pressedAt = 0
         let fired = false
 
+        // After the touch ends, so the lifting finger reaches nothing in the menu
+        function release() {
+            setTimeout(() => document.documentElement.classList.remove("y-touch-hold"), 50)
+        }
+
         function cancel() {
             clearTimeout(timer)
             timer = 0
@@ -55,6 +60,8 @@ export class ContextMenuComponent extends BaseComponent {
                 if (!at?.node.isConnected) return
                 pressedAt = Date.now()
                 fired = true
+                document.documentElement.classList.add("y-touch-hold")
+                getSelection()?.removeAllRanges()
                 navigator.vibrate?.(10)
                 at.node.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: at.x, clientY: at.y }))
             }, HOLD)
@@ -68,8 +75,17 @@ export class ContextMenuComponent extends BaseComponent {
             if (fired) e.preventDefault()
             fired = false
             cancel()
+            release()
         })
-        document.addEventListener("touchcancel", cancel)
+        // iOS selects the nearest text it can when the pressed one can't be selected; while the press holds the menu, none
+        document.addEventListener("selectionchange", () => {
+            if (document.documentElement.classList.contains("y-touch-hold")) getSelection()?.removeAllRanges()
+        })
+        document.addEventListener("touchcancel", () => {
+            fired = false
+            cancel()
+            release()
+        })
         // Android may send its own contextmenu for the same press; the one made here already opened the menu
         document.addEventListener("contextmenu", (e) => {
             if (e.isTrusted && Date.now() - pressedAt < 1000) {

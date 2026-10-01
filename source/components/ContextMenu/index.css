@@ -47,3 +47,8 @@
         user-select: text;
     }
 }
+
+/* While the finger that opened the menu still holds, the item under it is neither lit nor pressed */
+.y-touch-hold :is(.y-context-menu, .y-dropdown__menu, .y-sheet) {
+    pointer-events: none;
+}

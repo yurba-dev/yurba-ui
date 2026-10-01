@@ -999,10 +999,6 @@ body {
     white-space: nowrap;
 }
 
-.y-dropdown__item:hover {
-    background: var(--y-win-action-bg);
-}
-
 .y-dropdown__item:active {
     background: var(--y-win-action-bg-hover);
 }
@@ -1025,11 +1021,6 @@ body {
 
 .y-dropdown__item--danger {
     color: var(--y-win-danger);
-}
-
-.y-dropdown__item--danger:hover {
-    background: rgb(255 68 68 / 8%);
-    background: color-mix(in srgb, var(--y-win-danger) 8%, transparent);
 }
 
 .y-dropdown__item-label {
@@ -1077,12 +1068,23 @@ body {
     font-size: 20px;
 }
 
+/* Only a pointer that hovers: a finger would leave the item lit */
+@media (hover: hover) {
+    .y-dropdown__item:hover {
+        background: var(--y-win-action-bg);
+    }
+
+    .y-dropdown__item--danger:hover {
+        background: rgb(255 68 68 / 8%);
+        background: color-mix(in srgb, var(--y-win-danger) 8%, transparent);
+    }
+}
+
 /* Sheet */
 
 .y-sheet {
     position: fixed;
-    left: 0;
-    right: 0;
+    inset: 0;
     z-index: calc(var(--y-win-zindex) + 1);
     display: flex;
     flex-direction: column;
@@ -1149,7 +1151,11 @@ body {
     margin: 8px auto 0;
 }
 
-.y-sheet__panel--edge {
+.y-sheet--top .y-sheet__panel {
+    padding-top: max(8px, env(safe-area-inset-top));
+}
+
+.y-sheet--bottom .y-sheet__panel {
     padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
 
@@ -1266,6 +1272,11 @@ body {
         -webkit-user-select: text;
         user-select: text;
     }
+}
+
+/* While the finger that opened the menu still holds, the item under it is neither lit nor pressed */
+.y-touch-hold :is(.y-context-menu, .y-dropdown__menu, .y-sheet) {
+    pointer-events: none;
 }
 
 

@@ -12,7 +12,6 @@ export class DropdownComponent extends BaseComponent {
         this._content = properties.content ?? null
         if (!properties.trigger) error("Dropdown requires a trigger: pass trigger: '<html>' in options")
         this._triggerContent = properties.trigger
-        this._anchor = properties.anchor ?? null
         this._onOpen = properties.onOpen ?? null
         this._onClose = properties.onClose ?? null
         this._align = properties.align ?? 'left'
@@ -158,7 +157,6 @@ export class DropdownComponent extends BaseComponent {
             menuOpened(entry, trigger)
             dropdown._sheet = openSheet(menuItems(), {
                 trigger,
-                anchor: dropdown._anchor,
                 icons: { ...DropdownComponent.icons, ...dropdown._icons },
                 onClose: (panel) => {
                     menuClosed(entry)

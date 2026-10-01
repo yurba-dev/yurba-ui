@@ -1410,22 +1410,7 @@ var __yurbaui__ = (() => {
   var SelectComponent = _SelectComponent;
 
   // source/components/Dropdown/sheet.js
-  function bars(trigger, anchor) {
-    const win = trigger == null ? void 0 : trigger.closest(".y-win");
-    const header = anchor ?? (win == null ? void 0 : win.querySelector(".y-win__header"));
-    const edge = (header == null ? void 0 : header.offsetHeight) ? header : win;
-    if (edge) {
-      return { top: Math.max(0, Math.floor(edge.getBoundingClientRect()[(header == null ? void 0 : header.offsetHeight) ? "bottom" : "top"]) - 1), bottom: 0 };
-    }
-    const probe = document.createElement("div");
-    probe.style.cssText = "position: fixed; visibility: hidden; top: var(--y-win-sheet-top, 0px); bottom: var(--y-win-sheet-bottom, 0px)";
-    document.body.appendChild(probe);
-    const style = getComputedStyle(probe);
-    const result = { top: parseFloat(style.top) || 0, bottom: parseFloat(style.bottom) || 0 };
-    probe.remove();
-    return result;
-  }
-  function openSheet(items, { trigger = null, at = null, anchor = null, onClose = null, icons = menuIcons } = {}) {
+  function openSheet(items, { trigger = null, at = null, onClose = null, icons = menuIcons } = {}) {
     var _a;
     const layer = document.createElement("div");
     const panel = document.createElement("div");
@@ -1437,12 +1422,7 @@ var __yurbaui__ = (() => {
     const seen = ((_a = window.visualViewport) == null ? void 0 : _a.height) ?? window.innerHeight;
     const middle = at ?? (box ? box.top + box.height / 2 : 0);
     const top = middle < seen / 2;
-    const edges = bars(trigger, anchor);
-    if (!top && !anchor && (trigger == null ? void 0 : trigger.closest(".y-win"))) edges.top = 0;
     layer.className = "y-sheet " + (top ? "y-sheet--top" : "y-sheet--bottom");
-    layer.style.top = edges.top + "px";
-    layer.style.bottom = edges.bottom + "px";
-    if (!top && edges.bottom == 0) panel.classList.add("y-sheet__panel--edge");
     function close() {
       if (!open) return;
       open = false;
@@ -1583,7 +1563,6 @@ var __yurbaui__ = (() => {
       this._content = properties.content ?? null;
       if (!properties.trigger) error("Dropdown requires a trigger: pass trigger: '<html>' in options");
       this._triggerContent = properties.trigger;
-      this._anchor = properties.anchor ?? null;
       this._onOpen = properties.onOpen ?? null;
       this._onClose = properties.onClose ?? null;
       this._align = properties.align ?? "left";
@@ -1748,7 +1727,6 @@ var __yurbaui__ = (() => {
         menuOpened(entry, trigger);
         dropdown._sheet = openSheet(menuItems(), {
           trigger,
-          anchor: dropdown._anchor,
           icons: { ..._DropdownComponent.icons, ...dropdown._icons },
           onClose: (panel) => {
             menuClosed(entry);
@@ -1825,6 +1803,9 @@ var __yurbaui__ = (() => {
       let start = null;
       let pressedAt = 0;
       let fired = false;
+      function release() {
+        setTimeout(() => document.documentElement.classList.remove("y-touch-hold"), 50);
+      }
       function cancel() {
         clearTimeout(timer);
         timer = 0;
@@ -1838,13 +1819,15 @@ var __yurbaui__ = (() => {
         const touch = e.touches[0];
         start = { x: touch.clientX, y: touch.clientY, node: e.target };
         timer = setTimeout(() => {
-          var _a;
+          var _a, _b;
           const at = start;
           cancel();
           if (!(at == null ? void 0 : at.node.isConnected)) return;
           pressedAt = Date.now();
           fired = true;
-          (_a = navigator.vibrate) == null ? void 0 : _a.call(navigator, 10);
+          document.documentElement.classList.add("y-touch-hold");
+          (_a = getSelection()) == null ? void 0 : _a.removeAllRanges();
+          (_b = navigator.vibrate) == null ? void 0 : _b.call(navigator, 10);
           at.node.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: at.x, clientY: at.y }));
         }, HOLD);
       }, { passive: true });
@@ -1856,8 +1839,17 @@ var __yurbaui__ = (() => {
         if (fired) e.preventDefault();
         fired = false;
         cancel();
+        release();
       });
-      document.addEventListener("touchcancel", cancel);
+      document.addEventListener("selectionchange", () => {
+        var _a;
+        if (document.documentElement.classList.contains("y-touch-hold")) (_a = getSelection()) == null ? void 0 : _a.removeAllRanges();
+      });
+      document.addEventListener("touchcancel", () => {
+        fired = false;
+        cancel();
+        release();
+      });
       document.addEventListener("contextmenu", (e) => {
         if (e.isTrusted && Date.now() - pressedAt < 1e3) {
           e.preventDefault();
