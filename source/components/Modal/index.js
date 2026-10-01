@@ -299,13 +299,10 @@ export class Modal {
         if (!this.showed || !this.modal || this.modal.contains(document.activeElement)) return
         const autofocus = this.modal.querySelector('[autofocus]')
         const win = this.modal.querySelector('.y-win')
-        // The keyboard would cover a phone sheet
-        if (this.sheet && !autofocus && window.matchMedia("(max-width: 768px)").matches) {
-            win.focus()
-            return
-        }
-        const list = this.#focusables()
-        ;(autofocus ?? list[0] ?? win ?? this.modal).focus()
+        // Only a field asked for gets the focus. A first button would light up and show its tooltip when the focus
+        // came from a field, and a first field would bring up a phone's keyboard; the dialog itself still takes
+        // Escape and Tab
+        ;(autofocus ?? win ?? this.modal).focus()
     }
 
     #trapFocus(event) {

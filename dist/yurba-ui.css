@@ -368,6 +368,11 @@ body {
     transition: scale var(--y-win-enter);
 }
 
+/* Focused only so it takes Escape and Tab; nothing to show */
+.y-win:focus {
+    outline: none;
+}
+
 /* scale, not transform: positioning owns transform */
 .y-win__wrapper.is-hidden .y-win {
     scale: .96;

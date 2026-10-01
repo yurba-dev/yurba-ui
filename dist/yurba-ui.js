@@ -476,12 +476,7 @@ var __yurbaui__ = (() => {
     if (!this.showed || !this.modal || this.modal.contains(document.activeElement)) return;
     const autofocus = this.modal.querySelector("[autofocus]");
     const win = this.modal.querySelector(".y-win");
-    if (this.sheet && !autofocus && window.matchMedia("(max-width: 768px)").matches) {
-      win.focus();
-      return;
-    }
-    const list = __privateMethod(this, _Modal_instances, focusables_fn).call(this);
-    (autofocus ?? list[0] ?? win ?? this.modal).focus();
+    (autofocus ?? win ?? this.modal).focus();
   };
   trapFocus_fn = function(event) {
     const list = __privateMethod(this, _Modal_instances, focusables_fn).call(this);
