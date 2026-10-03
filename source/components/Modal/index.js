@@ -240,7 +240,7 @@ export class Modal {
             setTimeout(() => {
                 if (!this.showed || this.outsideClickHandler) return
                 this.outsideClickHandler = (event) => {
-                    if (!this.modal) return
+                    if (!this.modal || event.closesPopup) return
                     // A picker on top may be hidden by this same click
                     const inAnotherModal = UIElements.some(el =>
                         el != this && el.modal && el.modal.contains(event.target))

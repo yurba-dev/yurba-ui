@@ -40,6 +40,7 @@ const cssOrder = [
     'components/ContextMenu/index.css',
     'components/Readmore/index.css',
     'components/Scrollbar/index.css',
+    'components/PullToRefresh/index.css',
 ]
 
 const cssBundle = cssOrder.map(file => {

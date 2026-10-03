@@ -61,3 +61,34 @@
     font-weight: 500;
     opacity: 1;
 }
+
+/* Sheet */
+
+/* The same header and content, laid in a sheet's panel instead of floating */
+.y-tooltip.y-tooltip--sheet {
+    position: static;
+    min-width: 0;
+    max-width: none;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    font-size: 14px;
+}
+
+.y-tooltip--sheet .y-tooltip__header {
+    padding: 4px 14px 12px;
+    font-size: 15px;
+    gap: 10px;
+}
+
+.y-tooltip--sheet .y-tooltip__icon span[class^="material-symbols"] {
+    font-size: 22px;
+}
+
+.y-tooltip--sheet .y-tooltip__content {
+    padding: 10px 14px 4px;
+    font-size: 14px;
+}

@@ -81,7 +81,8 @@
     position: fixed;
     right: 10px;
     bottom: 10px;
-    z-index: var(--y-win-zindex);
+    /* Above dialogs, or a sheet opened right after a toast covers it */
+    z-index: calc(var(--y-win-zindex) + 2);
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -298,6 +299,37 @@
     opacity: 1;
 }
 
+/* Sheet */
+
+/* The same header and content, laid in a sheet's panel instead of floating */
+.y-tooltip.y-tooltip--sheet {
+    position: static;
+    min-width: 0;
+    max-width: none;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    font-size: 14px;
+}
+
+.y-tooltip--sheet .y-tooltip__header {
+    padding: 4px 14px 12px;
+    font-size: 15px;
+    gap: 10px;
+}
+
+.y-tooltip--sheet .y-tooltip__icon span[class^="material-symbols"] {
+    font-size: 22px;
+}
+
+.y-tooltip--sheet .y-tooltip__content {
+    padding: 10px 14px 4px;
+    font-size: 14px;
+}
+
 
 /* Tokens */
 
@@ -413,8 +445,7 @@ body {
     flex-shrink: 0;
     padding: var(--y-win-header-padding);
     border-bottom: 1px solid var(--y-win-divider);
-    background: var(--y-win-bg-transparent);
-    backdrop-filter: blur(10px);
+    background: var(--y-win-bg);
     z-index: 9;
     border-radius: inherit;
     border-bottom-left-radius: 0;
@@ -536,8 +567,7 @@ body {
 }
 
 .y-win__footer {
-    background: var(--y-win-bg-transparent);
-    backdrop-filter: blur(10px);
+    background: var(--y-win-bg);
     height: 100%;
     width: 100%;
     display: flex;
@@ -1384,4 +1414,72 @@ html [data-y-scrollbar]::-webkit-scrollbar {
 
 .y-scrollbar.is-dragging {
     cursor: grabbing;
+}
+
+
+/* Pull to refresh */
+
+/* The pull is shown by the indicator, not by the page stretching or glowing at its top */
+html.y-pull-enabled,
+html.y-pull-enabled body {
+    overscroll-behavior-y: none;
+}
+
+/* A frame from the top bar's bottom edge down, cutting off whatever of the badge is still above it */
+.y-pull {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--y-pull-zindex, 1000);
+    height: 180px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.y-pull__badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--y-win-bg);
+    color: var(--y-win-text);
+    box-shadow: var(--y-win-shadow-menu);
+    opacity: 0;
+    transform: translate3d(-50%, -48px, 0);
+    will-change: transform, opacity;
+}
+
+.y-pull--back .y-pull__badge {
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.y-pull--ready .y-pull__badge {
+    color: var(--y-win-accent);
+}
+
+.y-pull__icon {
+    width: 22px;
+    height: 22px;
+}
+
+.y-pull--busy .y-pull__icon {
+    animation: y-pull-spin .8s linear infinite;
+}
+
+@keyframes y-pull-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .y-pull--busy .y-pull__icon {
+        animation-duration: 2s;
+    }
 }

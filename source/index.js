@@ -18,6 +18,7 @@ const YurbaUI = {
     Group: YW.Group,
     Readmore: YW.Readmore,
     Scrollbar: YW.Scrollbar,
+    PullToRefresh: YW.PullToRefresh,
 }
 
 export { YurbaUI }

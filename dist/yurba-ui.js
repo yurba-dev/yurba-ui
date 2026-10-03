@@ -212,7 +212,7 @@ var __yurbaui__ = (() => {
         setTimeout(() => {
           if (!this.showed || this.outsideClickHandler) return;
           this.outsideClickHandler = (event) => {
-            if (!this.modal) return;
+            if (!this.modal || event.closesPopup) return;
             const inAnotherModal = UIElements.some((el) => el != this && el.modal && el.modal.contains(event.target));
             if (inAnotherModal || __privateMethod(this, _Modal_instances, inLaterLayer_fn).call(this, event.target)) return;
             if (event.target == this.modal || !this.modal.contains(event.target)) __privateMethod(this, _Modal_instances, dismiss_fn).call(this);
@@ -454,8 +454,8 @@ var __yurbaui__ = (() => {
     return layers[layers.length - 1] == this.modal;
   };
   inLaterLayer_fn = function(target) {
-    const top = target instanceof Node && [...document.body.children].find((child) => child.contains(target));
-    return !!top && top != this.modal && !!(this.modal.compareDocumentPosition(top) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const top2 = target instanceof Node && [...document.body.children].find((child) => child.contains(target));
+    return !!top2 && top2 != this.modal && !!(this.modal.compareDocumentPosition(top2) & Node.DOCUMENT_POSITION_FOLLOWING);
   };
   unbindHandlers_fn = function() {
     if (this.outsideClickHandler) {
@@ -623,306 +623,6 @@ var __yurbaui__ = (() => {
     }
   };
 
-  // source/components/Tooltip/index.js
-  var tooltipId = 0;
-  var _Tooltip_instances, listen_fn, place_fn, unmount_fn;
-  var Tooltip = class {
-    constructor(target, properties = {}) {
-      __privateAdd(this, _Tooltip_instances);
-      this.target = target;
-      this.props = {
-        pos: properties.pos || "top",
-        title: properties.title || "",
-        content: properties.content || "",
-        icon: properties.icon || null,
-        className: properties.className || null,
-        delay: properties.delay ?? 150,
-        offset: properties.offset ?? 5,
-        when: properties.when || null,
-        trigger: properties.trigger || "hover"
-      };
-      this.tooltip = null;
-      this.showTimeout = null;
-      this.hideTimeout = null;
-      this.removeTimeout = null;
-      this.mounted = false;
-      this.visible = false;
-      this.id = `y-tooltip-${++tooltipId}`;
-      this.init();
-    }
-    init() {
-      this._onScroll = (e) => {
-        var _a;
-        if (!((_a = this.tooltip) == null ? void 0 : _a.contains(e.target))) this.hide();
-      };
-      this._onPointer = () => {
-        if (!this.target.isConnected) this.hide();
-      };
-      this._onResize = () => {
-        if (this.visible && this.tooltip) __privateMethod(this, _Tooltip_instances, place_fn).call(this);
-      };
-      if (this.props.trigger == "click") {
-        this._onClick = () => {
-          if (this.visible) this.hide();
-          else this.show();
-        };
-        this._onOutside = (e) => {
-          var _a;
-          if (!this.target.contains(e.target) && !((_a = this.tooltip) == null ? void 0 : _a.contains(e.target))) this.hide();
-        };
-        this._onKey = (e) => {
-          if (e.key == "Escape") this.hide();
-        };
-        this.target.addEventListener("click", this._onClick);
-        return;
-      }
-      this._onEnter = (e) => {
-        if (e.pointerType != "touch") this.scheduleShow();
-      };
-      this._onFocus = () => {
-        if (this.target.matches(":focus-visible, :has(:focus-visible)")) this.scheduleShow();
-      };
-      this._onHide = () => this.scheduleHide();
-      this.target.addEventListener("pointerenter", this._onEnter);
-      this.target.addEventListener("pointerleave", this._onHide);
-      this.target.addEventListener("focusin", this._onFocus);
-      this.target.addEventListener("focusout", this._onHide);
-    }
-    createTooltip() {
-      if (this.mounted) return;
-      const tooltip = document.createElement("div");
-      tooltip.classList.add("y-tooltip", "is-hidden");
-      tooltip.id = this.id;
-      tooltip.setAttribute("role", "tooltip");
-      if (!this.props.title) tooltip.classList.add("y-tooltip--plain");
-      if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean));
-      let header = "";
-      if (this.props.title) {
-        if (this.props.icon instanceof BaseComponent) {
-          this.props.icon = this.props.icon.el.outerHTML;
-        }
-        header = `
-                <div class="y-tooltip__header">
-                    ${this.props.icon ? `<span class="y-tooltip__icon">${this.props.icon}</span>` : ""}
-                    <span class="y-tooltip__title">${this.props.title}</span>
-                </div>
-            `;
-      }
-      const content = typeof this.props.content == "function" ? this.props.content() : this.props.content;
-      tooltip.innerHTML = `
-            ${header}
-            <div class="y-tooltip__content">${content}</div>
-        `;
-      document.body.appendChild(tooltip);
-      tooltip.addEventListener("mouseenter", () => this.clearHide());
-      tooltip.addEventListener("mouseleave", () => this.scheduleHide());
-      this.tooltip = tooltip;
-      this.mounted = true;
-      if (!this.target.hasAttribute("aria-describedby")) this.target.setAttribute("aria-describedby", this.id);
-    }
-    scheduleShow() {
-      if (this.props.when && !this.props.when()) return;
-      this.clearHide();
-      this.clearShow();
-      this.showTimeout = setTimeout(() => this.show(), this.props.delay);
-    }
-    scheduleHide() {
-      this.clearShow();
-      this.clearHide();
-      this.hideTimeout = setTimeout(() => this.hide(), this.props.delay);
-    }
-    clearShow() {
-      if (this.showTimeout) {
-        clearTimeout(this.showTimeout);
-        this.showTimeout = null;
-      }
-    }
-    clearHide() {
-      if (this.hideTimeout) {
-        clearTimeout(this.hideTimeout);
-        this.hideTimeout = null;
-      }
-    }
-    show() {
-      if (!this.target.isConnected) return this.hide();
-      clearTimeout(this.removeTimeout);
-      this.createTooltip();
-      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, true);
-      this.visible = true;
-      __privateMethod(this, _Tooltip_instances, place_fn).call(this);
-      void this.tooltip.offsetWidth;
-      requestAnimationFrame(() => {
-        if (this.tooltip && this.visible) this.tooltip.classList.remove("is-hidden");
-      });
-    }
-    // New title, icon or content for a tooltip that may be open right now
-    update(properties = {}) {
-      for (const key of ["title", "icon", "content"]) {
-        if (properties[key] != void 0) this.props[key] = properties[key];
-      }
-      if (!this.tooltip) return;
-      const content = typeof this.props.content == "function" ? this.props.content() : this.props.content;
-      this.tooltip.querySelector(".y-tooltip__content").innerHTML = content;
-      const title = this.tooltip.querySelector(".y-tooltip__title");
-      if (title) title.innerHTML = this.props.title;
-      const icon = this.tooltip.querySelector(".y-tooltip__icon");
-      if (icon && this.props.icon) icon.innerHTML = this.props.icon;
-      if (this.visible) __privateMethod(this, _Tooltip_instances, place_fn).call(this);
-    }
-    hide() {
-      this.clearShow();
-      this.visible = false;
-      if (!this.tooltip) return;
-      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, false);
-      this.tooltip.classList.add("is-hidden");
-      clearTimeout(this.removeTimeout);
-      this.removeTimeout = setTimeout(() => __privateMethod(this, _Tooltip_instances, unmount_fn).call(this), 300);
-    }
-    destroy() {
-      this.clearShow();
-      this.clearHide();
-      clearTimeout(this.removeTimeout);
-      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, false);
-      this.target.removeEventListener("click", this._onClick);
-      this.target.removeEventListener("pointerenter", this._onEnter);
-      this.target.removeEventListener("pointerleave", this._onHide);
-      this.target.removeEventListener("focusin", this._onFocus);
-      this.target.removeEventListener("focusout", this._onHide);
-      if (this.tooltip) this.tooltip.classList.add("is-hidden");
-      __privateMethod(this, _Tooltip_instances, unmount_fn).call(this);
-    }
-  };
-  _Tooltip_instances = new WeakSet();
-  listen_fn = function(on) {
-    const method = on ? "addEventListener" : "removeEventListener";
-    window[method]("scroll", this._onScroll, true);
-    window[method]("resize", this._onResize);
-    document[method]("pointerover", this._onPointer);
-    if (this.props.trigger == "click") {
-      document[method]("pointerdown", this._onOutside, true);
-      document[method]("keydown", this._onKey);
-    }
-  };
-  place_fn = function() {
-    const offset = this.props.offset;
-    const rect = this.target.getBoundingClientRect();
-    const tooltipRect = this.tooltip.getBoundingClientRect();
-    let pos = this.props.pos;
-    if (pos == "top" && rect.top < tooltipRect.height + offset) pos = "bottom";
-    if (pos == "bottom" && rect.bottom + tooltipRect.height + offset > window.innerHeight) pos = "top";
-    if (pos == "left" && rect.left < tooltipRect.width + offset) pos = "right";
-    if (pos == "right" && rect.right + tooltipRect.width + offset > window.innerWidth) pos = "left";
-    let top = 0;
-    let left = 0;
-    switch (pos) {
-      case "top":
-        top = rect.top - tooltipRect.height - offset;
-        left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-        break;
-      case "bottom":
-        top = rect.bottom + offset;
-        left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-        break;
-      case "left":
-        top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.left - tooltipRect.width - offset;
-        break;
-      case "right":
-        top = rect.top + rect.height / 2 - tooltipRect.height / 2;
-        left = rect.right + offset;
-        break;
-    }
-    const pad = 8;
-    if (left < pad) left = pad;
-    if (left + tooltipRect.width > window.innerWidth - pad) left = window.innerWidth - tooltipRect.width - pad;
-    if (top < pad) top = pad;
-    if (top + tooltipRect.height > window.innerHeight - pad) top = window.innerHeight - tooltipRect.height - pad;
-    this.tooltip.style.top = `${top + window.scrollY}px`;
-    this.tooltip.style.left = `${left + window.scrollX}px`;
-  };
-  unmount_fn = function() {
-    if (!this.tooltip || !this.tooltip.classList.contains("is-hidden")) return;
-    this.tooltip.remove();
-    this.tooltip = null;
-    this.mounted = false;
-    if (this.target.getAttribute("aria-describedby") == this.id) this.target.removeAttribute("aria-describedby");
-  };
-
-  // source/components/Description/index.js
-  var DescriptionComponent = class extends BaseComponent {
-    constructor(text) {
-      super();
-      this.el = document.createElement("div");
-      this.el.classList.add("y-win__desc");
-      this.el.innerHTML = text;
-      this.placement = "header";
-    }
-  };
-
-  // source/components/Text/index.js
-  var TextComponent = class extends BaseComponent {
-    constructor(text) {
-      super();
-      this.el = document.createElement("p");
-      this.el.classList.add("y-win__text");
-      this.el.innerHTML = text;
-      this.placement = "body";
-    }
-  };
-
-  // source/components/Image/index.js
-  var ImageComponent = class extends BaseComponent {
-    constructor(url) {
-      super();
-      this.el = document.createElement("img");
-      this.el.classList.add("y-win__image");
-      this.el.src = url;
-      this.placement = "body";
-    }
-  };
-
-  // source/components/VIconButton/index.js
-  var VIconButtonComponent = class extends BaseComponent {
-    constructor(options = {}, cb = () => {
-    }) {
-      super();
-      this.el = document.createElement("button");
-      this.el.type = "button";
-      this.el.classList.add("y-win__icon-vbutton");
-      this.el.innerHTML = `
-            <div class="y-win__icon-vbutton__icon">${options.icon ?? ""}</div>
-            ${"name" in options ? `<span class="y-win__icon-vbutton__name">${options.name}</span>` : ""}
-        `;
-      if (!("name" in options)) {
-        this.el.classList.add("only-icon");
-      }
-      this.placement = "body";
-      this.el.addEventListener("click", () => cb());
-    }
-  };
-
-  // source/components/MaterialIcon/index.js
-  var MaterialIconComponent = class extends BaseComponent {
-    constructor(name) {
-      super();
-      this.el = document.createElement("span");
-      this.el.classList.add("material-symbols-rounded");
-      this.el.translate = false;
-      this.el.textContent = name;
-      this.placement = "body";
-    }
-  };
-
-  // source/components/YurbaIcon/index.js
-  var YurbaIconComponent = class extends BaseComponent {
-    constructor(name) {
-      super();
-      this.el = document.createElement("span");
-      this.el.className = `yrb yrb-${name}`;
-      this.placement = "body";
-    }
-  };
-
   // source/helpers/menu.js
   var openMenus = /* @__PURE__ */ new Set();
   function menuOpened(entry, from) {
@@ -959,13 +659,13 @@ var __yurbaui__ = (() => {
     let left = align == "right" ? tRect.right - mw : tRect.left;
     if (left + mw > window.innerWidth - pad) left = window.innerWidth - mw - pad;
     if (left < pad) left = pad;
-    let top = tRect.bottom + gap;
-    if (top + mh > window.innerHeight - pad) {
+    let top2 = tRect.bottom + gap;
+    if (top2 + mh > window.innerHeight - pad) {
       const above = tRect.top - gap - mh;
-      top = above >= pad ? above : Math.max(pad, window.innerHeight - mh - pad);
+      top2 = above >= pad ? above : Math.max(pad, window.innerHeight - mh - pad);
     }
     menu.style.left = left + "px";
-    menu.style.top = top + "px";
+    menu.style.top = top2 + "px";
   }
   function repositionSubmenu(trigger, submenu) {
     submenu.classList.remove("y-dropdown__submenu--inline");
@@ -1106,16 +806,496 @@ var __yurbaui__ = (() => {
     });
   }
 
+  // source/components/Dropdown/sheet.js
+  function openSheet(items, { trigger = null, at = null, onClose = null, icons = menuIcons } = {}) {
+    var _a;
+    const layer = document.createElement("div");
+    const panel = document.createElement("div");
+    panel.className = "y-sheet__panel";
+    panel.setAttribute("role", "menu");
+    const cleanups = [];
+    let open = true;
+    const box = trigger == null ? void 0 : trigger.getBoundingClientRect();
+    const seen = ((_a = window.visualViewport) == null ? void 0 : _a.height) ?? window.innerHeight;
+    const middle = at ?? (box ? box.top + box.height / 2 : 0);
+    const top2 = middle < seen / 2;
+    layer.className = "y-sheet " + (top2 ? "y-sheet--top" : "y-sheet--bottom");
+    function close() {
+      if (!open) return;
+      open = false;
+      document.removeEventListener("keydown", onKey, true);
+      cleanups.splice(0).forEach((fn) => fn());
+      layer.classList.remove("y-sheet--open");
+      setTimeout(() => layer.remove(), 250);
+      if (onClose) onClose(panel);
+    }
+    function onKey(e) {
+      if (e.key != "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    }
+    function build(list, container) {
+      tidyItems(list).forEach((item) => {
+        if (item.separator) {
+          const sep = document.createElement("div");
+          sep.className = "y-dropdown__separator";
+          container.appendChild(sep);
+          return;
+        }
+        const nested = item.children != null && (typeof item.children == "function" || item.children.length > 0);
+        if (nested || item.submenu != null) return group(item, container);
+        const row = itemRow(item, false, icons);
+        row.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!item.keepOpen) close();
+          if (item.onClick) item.onClick(e);
+        });
+        container.appendChild(row);
+      });
+    }
+    function group(item, container) {
+      const head = itemRow({ ...item, active: false }, true, icons);
+      const body = document.createElement("div");
+      body.className = "y-sheet__group";
+      let cleanup = null;
+      function set(list) {
+        body.replaceChildren();
+        build(list, body);
+      }
+      function collapse() {
+        head.classList.remove("y-dropdown__item--open");
+        cleanup == null ? void 0 : cleanup();
+        cleanup = null;
+        body.replaceChildren();
+      }
+      function expand() {
+        head.classList.add("y-dropdown__item--open");
+        if (item.submenu instanceof HTMLElement) return body.appendChild(item.submenu);
+        if (item.submenu != null) {
+          body.innerHTML = String(item.submenu);
+          return;
+        }
+        if (typeof item.children != "function") return set(item.children);
+        const own = item.children(set) ?? (() => {
+        });
+        cleanup = own;
+        cleanups.push(() => own == cleanup && own());
+      }
+      head.addEventListener("click", (e) => {
+        e.stopPropagation();
+        head.classList.contains("y-dropdown__item--open") ? collapse() : expand();
+      });
+      container.append(head, body);
+      if (item.expanded) expand();
+    }
+    function bindSwipe() {
+      let startY = null;
+      let delta = 0;
+      panel.addEventListener("touchstart", (e) => {
+        startY = e.touches[0].clientY;
+        delta = 0;
+      }, { passive: true });
+      panel.addEventListener("touchmove", (e) => {
+        if (startY == null) return;
+        const y = e.touches[0].clientY;
+        const toward = top2 ? startY - y : y - startY;
+        const edge = top2 ? panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 1 : panel.scrollTop <= 0;
+        if (!edge || toward < 0) startY = y;
+        delta = edge ? Math.max(0, toward) : 0;
+        panel.style.transition = delta ? "none" : "";
+        panel.style.transform = delta ? `translateY(${top2 ? -delta : delta}px)` : "";
+      }, { passive: true });
+      function end() {
+        if (startY == null) return;
+        startY = null;
+        panel.style.transition = "";
+        panel.style.transform = "";
+        if (delta > 80) close();
+      }
+      panel.addEventListener("touchend", end);
+      panel.addEventListener("touchcancel", end);
+      panel.addEventListener("click", (e) => {
+        if (delta < 8) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
+    }
+    build(items, panel);
+    bindSwipe();
+    layer.appendChild(panel);
+    layer.addEventListener("click", (e) => {
+      if (e.target == layer) close();
+    });
+    document.addEventListener("keydown", onKey, true);
+    function onOutside(e) {
+      if (panel.contains(e.target) || (trigger == null ? void 0 : trigger.contains(e.target))) return;
+      close();
+    }
+    setTimeout(() => {
+      if (open) document.addEventListener("click", onOutside, true);
+    }, 0);
+    cleanups.push(() => document.removeEventListener("click", onOutside, true));
+    const host = trigger == null ? void 0 : trigger.closest(".y-win__wrapper");
+    if (host) {
+      const watch = new MutationObserver(() => {
+        if (host.classList.contains("is-hidden") || !host.isConnected) close();
+      });
+      watch.observe(host, { attributes: true, attributeFilter: ["class"] });
+      cleanups.push(() => watch.disconnect());
+    }
+    document.body.appendChild(layer);
+    setTimeout(() => {
+      if (open) layer.classList.add("y-sheet--open");
+    }, 20);
+    return { panel, close, isOpen: () => open };
+  }
+
+  // source/components/Tooltip/index.js
+  var tooltipId = 0;
+  var _Tooltip_instances, listen_fn, markup_fn, asSheet_fn, showSheet_fn, place_fn, unmount_fn;
+  var Tooltip = class {
+    constructor(target, properties = {}) {
+      __privateAdd(this, _Tooltip_instances);
+      this.target = target;
+      this.props = {
+        pos: properties.pos || "top",
+        title: properties.title || "",
+        content: properties.content || "",
+        icon: properties.icon || null,
+        className: properties.className || null,
+        delay: properties.delay ?? 150,
+        offset: properties.offset ?? 5,
+        when: properties.when || null,
+        trigger: properties.trigger || "hover",
+        // One opened by a click is a sheet on a phone, as menus are
+        sheet: properties.sheet ?? true
+      };
+      this.tooltip = null;
+      this.sheet = null;
+      this.showTimeout = null;
+      this.hideTimeout = null;
+      this.removeTimeout = null;
+      this.mounted = false;
+      this.visible = false;
+      this.id = `y-tooltip-${++tooltipId}`;
+      this.init();
+    }
+    init() {
+      this._onScroll = (e) => {
+        var _a;
+        if (!((_a = this.tooltip) == null ? void 0 : _a.contains(e.target))) this.hide();
+      };
+      this._onPointer = () => {
+        if (!this.target.isConnected) this.hide();
+      };
+      this._onResize = () => {
+        if (this.visible && this.tooltip) __privateMethod(this, _Tooltip_instances, place_fn).call(this);
+      };
+      if (this.props.trigger == "click") {
+        this._onClick = () => {
+          if (this.visible) this.hide();
+          else this.show();
+        };
+        this._onOutside = (e) => {
+          var _a;
+          if (!this.target.contains(e.target) && !((_a = this.tooltip) == null ? void 0 : _a.contains(e.target))) this.hide();
+        };
+        this._onKey = (e) => {
+          if (e.key == "Escape") this.hide();
+        };
+        this.target.addEventListener("click", this._onClick);
+        return;
+      }
+      this._onEnter = (e) => {
+        if (e.pointerType != "touch") this.scheduleShow();
+      };
+      this._onFocus = () => {
+        if (this.target.matches(":focus-visible, :has(:focus-visible)")) this.scheduleShow();
+      };
+      this._onHide = () => this.scheduleHide();
+      this.target.addEventListener("pointerenter", this._onEnter);
+      this.target.addEventListener("pointerleave", this._onHide);
+      this.target.addEventListener("focusin", this._onFocus);
+      this.target.addEventListener("focusout", this._onHide);
+    }
+    createTooltip() {
+      if (this.mounted) return;
+      const tooltip = document.createElement("div");
+      tooltip.classList.add("y-tooltip", "is-hidden");
+      tooltip.id = this.id;
+      tooltip.setAttribute("role", "tooltip");
+      if (!this.props.title) tooltip.classList.add("y-tooltip--plain");
+      if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean));
+      tooltip.innerHTML = __privateMethod(this, _Tooltip_instances, markup_fn).call(this);
+      document.body.appendChild(tooltip);
+      tooltip.addEventListener("mouseenter", () => this.clearHide());
+      tooltip.addEventListener("mouseleave", () => this.scheduleHide());
+      this.tooltip = tooltip;
+      this.mounted = true;
+      if (!this.target.hasAttribute("aria-describedby")) this.target.setAttribute("aria-describedby", this.id);
+    }
+    scheduleShow() {
+      if (this.props.when && !this.props.when()) return;
+      this.clearHide();
+      this.clearShow();
+      this.showTimeout = setTimeout(() => this.show(), this.props.delay);
+    }
+    scheduleHide() {
+      this.clearShow();
+      this.clearHide();
+      this.hideTimeout = setTimeout(() => this.hide(), this.props.delay);
+    }
+    clearShow() {
+      if (this.showTimeout) {
+        clearTimeout(this.showTimeout);
+        this.showTimeout = null;
+      }
+    }
+    clearHide() {
+      if (this.hideTimeout) {
+        clearTimeout(this.hideTimeout);
+        this.hideTimeout = null;
+      }
+    }
+    show() {
+      if (!this.target.isConnected) return this.hide();
+      if (__privateMethod(this, _Tooltip_instances, asSheet_fn).call(this)) return __privateMethod(this, _Tooltip_instances, showSheet_fn).call(this);
+      clearTimeout(this.removeTimeout);
+      this.createTooltip();
+      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, true);
+      this.visible = true;
+      __privateMethod(this, _Tooltip_instances, place_fn).call(this);
+      void this.tooltip.offsetWidth;
+      requestAnimationFrame(() => {
+        if (this.tooltip && this.visible) this.tooltip.classList.remove("is-hidden");
+      });
+    }
+    // New title, icon or content for a tooltip that may be open right now
+    update(properties = {}) {
+      for (const key of ["title", "icon", "content"]) {
+        if (properties[key] != void 0) this.props[key] = properties[key];
+      }
+      if (!this.tooltip) return;
+      const content = typeof this.props.content == "function" ? this.props.content() : this.props.content;
+      this.tooltip.querySelector(".y-tooltip__content").innerHTML = content;
+      const title = this.tooltip.querySelector(".y-tooltip__title");
+      if (title) title.innerHTML = this.props.title;
+      const icon = this.tooltip.querySelector(".y-tooltip__icon");
+      if (icon && this.props.icon) icon.innerHTML = this.props.icon;
+      if (this.visible && !this.sheet) __privateMethod(this, _Tooltip_instances, place_fn).call(this);
+    }
+    hide() {
+      this.clearShow();
+      this.visible = false;
+      if (this.sheet) return this.sheet.close();
+      if (!this.tooltip) return;
+      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, false);
+      this.tooltip.classList.add("is-hidden");
+      clearTimeout(this.removeTimeout);
+      this.removeTimeout = setTimeout(() => __privateMethod(this, _Tooltip_instances, unmount_fn).call(this), 300);
+    }
+    destroy() {
+      var _a;
+      this.clearShow();
+      this.clearHide();
+      clearTimeout(this.removeTimeout);
+      __privateMethod(this, _Tooltip_instances, listen_fn).call(this, false);
+      this.target.removeEventListener("click", this._onClick);
+      this.target.removeEventListener("pointerenter", this._onEnter);
+      this.target.removeEventListener("pointerleave", this._onHide);
+      this.target.removeEventListener("focusin", this._onFocus);
+      this.target.removeEventListener("focusout", this._onHide);
+      (_a = this.sheet) == null ? void 0 : _a.close();
+      if (this.tooltip) this.tooltip.classList.add("is-hidden");
+      __privateMethod(this, _Tooltip_instances, unmount_fn).call(this);
+    }
+  };
+  _Tooltip_instances = new WeakSet();
+  listen_fn = function(on) {
+    const method = on ? "addEventListener" : "removeEventListener";
+    window[method]("scroll", this._onScroll, true);
+    window[method]("resize", this._onResize);
+    document[method]("pointerover", this._onPointer);
+    if (this.props.trigger == "click") {
+      document[method]("pointerdown", this._onOutside, true);
+      document[method]("keydown", this._onKey);
+    }
+  };
+  markup_fn = function() {
+    let header = "";
+    if (this.props.title) {
+      if (this.props.icon instanceof BaseComponent) {
+        this.props.icon = this.props.icon.el.outerHTML;
+      }
+      header = `
+                <div class="y-tooltip__header">
+                    ${this.props.icon ? `<span class="y-tooltip__icon">${this.props.icon}</span>` : ""}
+                    <span class="y-tooltip__title">${this.props.title}</span>
+                </div>
+            `;
+    }
+    const content = typeof this.props.content == "function" ? this.props.content() : this.props.content;
+    return `
+            ${header}
+            <div class="y-tooltip__content">${content}</div>
+        `;
+  };
+  asSheet_fn = function() {
+    return this.props.trigger == "click" && this.props.sheet && window.matchMedia("(max-width: 768px)").matches;
+  };
+  showSheet_fn = function() {
+    if (this.sheet) return;
+    const box = document.createElement("div");
+    box.className = ["y-tooltip", "y-tooltip--sheet", this.props.className].filter(Boolean).join(" ");
+    box.innerHTML = __privateMethod(this, _Tooltip_instances, markup_fn).call(this);
+    const sheet = openSheet([], {
+      trigger: this.target,
+      onClose: () => {
+        if (this.sheet != sheet) return;
+        this.sheet = null;
+        this.tooltip = null;
+        this.mounted = false;
+        this.visible = false;
+      }
+    });
+    sheet.panel.setAttribute("role", "dialog");
+    sheet.panel.appendChild(box);
+    this.sheet = sheet;
+    this.tooltip = box;
+    this.mounted = true;
+    this.visible = true;
+  };
+  place_fn = function() {
+    const offset2 = this.props.offset;
+    const rect = this.target.getBoundingClientRect();
+    const tooltipRect = this.tooltip.getBoundingClientRect();
+    let pos = this.props.pos;
+    if (pos == "top" && rect.top < tooltipRect.height + offset2) pos = "bottom";
+    if (pos == "bottom" && rect.bottom + tooltipRect.height + offset2 > window.innerHeight) pos = "top";
+    if (pos == "left" && rect.left < tooltipRect.width + offset2) pos = "right";
+    if (pos == "right" && rect.right + tooltipRect.width + offset2 > window.innerWidth) pos = "left";
+    let top2 = 0;
+    let left = 0;
+    switch (pos) {
+      case "top":
+        top2 = rect.top - tooltipRect.height - offset2;
+        left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+        break;
+      case "bottom":
+        top2 = rect.bottom + offset2;
+        left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+        break;
+      case "left":
+        top2 = rect.top + rect.height / 2 - tooltipRect.height / 2;
+        left = rect.left - tooltipRect.width - offset2;
+        break;
+      case "right":
+        top2 = rect.top + rect.height / 2 - tooltipRect.height / 2;
+        left = rect.right + offset2;
+        break;
+    }
+    const pad = 8;
+    if (left < pad) left = pad;
+    if (left + tooltipRect.width > window.innerWidth - pad) left = window.innerWidth - tooltipRect.width - pad;
+    if (top2 < pad) top2 = pad;
+    if (top2 + tooltipRect.height > window.innerHeight - pad) top2 = window.innerHeight - tooltipRect.height - pad;
+    this.tooltip.style.top = `${top2 + window.scrollY}px`;
+    this.tooltip.style.left = `${left + window.scrollX}px`;
+  };
+  unmount_fn = function() {
+    if (!this.tooltip || !this.tooltip.classList.contains("is-hidden")) return;
+    this.tooltip.remove();
+    this.tooltip = null;
+    this.mounted = false;
+    if (this.target.getAttribute("aria-describedby") == this.id) this.target.removeAttribute("aria-describedby");
+  };
+
+  // source/components/Description/index.js
+  var DescriptionComponent = class extends BaseComponent {
+    constructor(text) {
+      super();
+      this.el = document.createElement("div");
+      this.el.classList.add("y-win__desc");
+      this.el.innerHTML = text;
+      this.placement = "header";
+    }
+  };
+
+  // source/components/Text/index.js
+  var TextComponent = class extends BaseComponent {
+    constructor(text) {
+      super();
+      this.el = document.createElement("p");
+      this.el.classList.add("y-win__text");
+      this.el.innerHTML = text;
+      this.placement = "body";
+    }
+  };
+
+  // source/components/Image/index.js
+  var ImageComponent = class extends BaseComponent {
+    constructor(url) {
+      super();
+      this.el = document.createElement("img");
+      this.el.classList.add("y-win__image");
+      this.el.src = url;
+      this.placement = "body";
+    }
+  };
+
+  // source/components/VIconButton/index.js
+  var VIconButtonComponent = class extends BaseComponent {
+    constructor(options2 = {}, cb = () => {
+    }) {
+      super();
+      this.el = document.createElement("button");
+      this.el.type = "button";
+      this.el.classList.add("y-win__icon-vbutton");
+      this.el.innerHTML = `
+            <div class="y-win__icon-vbutton__icon">${options2.icon ?? ""}</div>
+            ${"name" in options2 ? `<span class="y-win__icon-vbutton__name">${options2.name}</span>` : ""}
+        `;
+      if (!("name" in options2)) {
+        this.el.classList.add("only-icon");
+      }
+      this.placement = "body";
+      this.el.addEventListener("click", () => cb());
+    }
+  };
+
+  // source/components/MaterialIcon/index.js
+  var MaterialIconComponent = class extends BaseComponent {
+    constructor(name) {
+      super();
+      this.el = document.createElement("span");
+      this.el.classList.add("material-symbols-rounded");
+      this.el.translate = false;
+      this.el.textContent = name;
+      this.placement = "body";
+    }
+  };
+
+  // source/components/YurbaIcon/index.js
+  var YurbaIconComponent = class extends BaseComponent {
+    constructor(name) {
+      super();
+      this.el = document.createElement("span");
+      this.el.className = `yrb yrb-${name}`;
+      this.placement = "body";
+    }
+  };
+
   // source/components/Select/index.js
   var htmlEntities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (c) => htmlEntities[c]);
   }
   var _SelectComponent = class _SelectComponent extends BaseComponent {
-    constructor(options = [], properties = {}) {
+    constructor(options2 = [], properties = {}) {
       var _a;
       super();
-      this._options = options;
+      this._options = options2;
       this._icons = properties.icons ?? null;
       this._multiple = properties.multiple ?? false;
       this._placeholder = properties.placeholder ?? _SelectComponent.labels.placeholder;
@@ -1132,7 +1312,7 @@ var __yurbaui__ = (() => {
       if (this._multiple) {
         this._values = Array.isArray(properties.values) ? [...properties.values] : [];
       } else {
-        this._value = properties.value ?? (((_a = options[0]) == null ? void 0 : _a.value) ?? null);
+        this._value = properties.value ?? (((_a = options2[0]) == null ? void 0 : _a.value) ?? null);
       }
     }
     render() {
@@ -1330,10 +1510,10 @@ var __yurbaui__ = (() => {
       return this;
     }
     // Options that change after rendering; the value stays if it is still among them
-    setOptions(options, value = this._value) {
+    setOptions(options2, value = this._value) {
       var _a;
-      this._options = options;
-      if (!this._multiple) this._value = options.some((o) => o.value == value) ? value : ((_a = options[0]) == null ? void 0 : _a.value) ?? null;
+      this._options = options2;
+      if (!this._multiple) this._value = options2.some((o) => o.value == value) ? value : ((_a = options2[0]) == null ? void 0 : _a.value) ?? null;
       this._syncTrigger();
       if (this._menuMounted) this._renderMenu();
       return this;
@@ -1403,151 +1583,6 @@ var __yurbaui__ = (() => {
   // An empty check keeps the tick drawn in CSS
   __publicField(_SelectComponent, "icons", { arrow: '<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>', check: "" });
   var SelectComponent = _SelectComponent;
-
-  // source/components/Dropdown/sheet.js
-  function openSheet(items, { trigger = null, at = null, onClose = null, icons = menuIcons } = {}) {
-    var _a;
-    const layer = document.createElement("div");
-    const panel = document.createElement("div");
-    panel.className = "y-sheet__panel";
-    panel.setAttribute("role", "menu");
-    const cleanups = [];
-    let open = true;
-    const box = trigger == null ? void 0 : trigger.getBoundingClientRect();
-    const seen = ((_a = window.visualViewport) == null ? void 0 : _a.height) ?? window.innerHeight;
-    const middle = at ?? (box ? box.top + box.height / 2 : 0);
-    const top = middle < seen / 2;
-    layer.className = "y-sheet " + (top ? "y-sheet--top" : "y-sheet--bottom");
-    function close() {
-      if (!open) return;
-      open = false;
-      document.removeEventListener("keydown", onKey, true);
-      cleanups.splice(0).forEach((fn) => fn());
-      layer.classList.remove("y-sheet--open");
-      setTimeout(() => layer.remove(), 250);
-      if (onClose) onClose(panel);
-    }
-    function onKey(e) {
-      if (e.key != "Escape") return;
-      e.preventDefault();
-      e.stopPropagation();
-      close();
-    }
-    function build(list, container) {
-      tidyItems(list).forEach((item) => {
-        if (item.separator) {
-          const sep = document.createElement("div");
-          sep.className = "y-dropdown__separator";
-          container.appendChild(sep);
-          return;
-        }
-        const nested = item.children != null && (typeof item.children == "function" || item.children.length > 0);
-        if (nested || item.submenu != null) return group(item, container);
-        const row = itemRow(item, false, icons);
-        row.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (!item.keepOpen) close();
-          if (item.onClick) item.onClick(e);
-        });
-        container.appendChild(row);
-      });
-    }
-    function group(item, container) {
-      const head = itemRow({ ...item, active: false }, true, icons);
-      const body = document.createElement("div");
-      body.className = "y-sheet__group";
-      let cleanup = null;
-      function set(list) {
-        body.replaceChildren();
-        build(list, body);
-      }
-      function collapse() {
-        head.classList.remove("y-dropdown__item--open");
-        cleanup == null ? void 0 : cleanup();
-        cleanup = null;
-        body.replaceChildren();
-      }
-      function expand() {
-        head.classList.add("y-dropdown__item--open");
-        if (item.submenu instanceof HTMLElement) return body.appendChild(item.submenu);
-        if (item.submenu != null) {
-          body.innerHTML = String(item.submenu);
-          return;
-        }
-        if (typeof item.children != "function") return set(item.children);
-        const own = item.children(set) ?? (() => {
-        });
-        cleanup = own;
-        cleanups.push(() => own == cleanup && own());
-      }
-      head.addEventListener("click", (e) => {
-        e.stopPropagation();
-        head.classList.contains("y-dropdown__item--open") ? collapse() : expand();
-      });
-      container.append(head, body);
-      if (item.expanded) expand();
-    }
-    function bindSwipe() {
-      let startY = null;
-      let delta = 0;
-      panel.addEventListener("touchstart", (e) => {
-        startY = e.touches[0].clientY;
-        delta = 0;
-      }, { passive: true });
-      panel.addEventListener("touchmove", (e) => {
-        if (startY == null) return;
-        const y = e.touches[0].clientY;
-        const toward = top ? startY - y : y - startY;
-        const edge = top ? panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 1 : panel.scrollTop <= 0;
-        if (!edge || toward < 0) startY = y;
-        delta = edge ? Math.max(0, toward) : 0;
-        panel.style.transition = delta ? "none" : "";
-        panel.style.transform = delta ? `translateY(${top ? -delta : delta}px)` : "";
-      }, { passive: true });
-      function end() {
-        if (startY == null) return;
-        startY = null;
-        panel.style.transition = "";
-        panel.style.transform = "";
-        if (delta > 80) close();
-      }
-      panel.addEventListener("touchend", end);
-      panel.addEventListener("touchcancel", end);
-      panel.addEventListener("click", (e) => {
-        if (delta < 8) return;
-        e.preventDefault();
-        e.stopPropagation();
-      }, true);
-    }
-    build(items, panel);
-    bindSwipe();
-    layer.appendChild(panel);
-    layer.addEventListener("click", (e) => {
-      if (e.target == layer) close();
-    });
-    document.addEventListener("keydown", onKey, true);
-    function onOutside(e) {
-      if (panel.contains(e.target) || (trigger == null ? void 0 : trigger.contains(e.target))) return;
-      close();
-    }
-    setTimeout(() => {
-      if (open) document.addEventListener("click", onOutside, true);
-    }, 0);
-    cleanups.push(() => document.removeEventListener("click", onOutside, true));
-    const host = trigger == null ? void 0 : trigger.closest(".y-win__wrapper");
-    if (host) {
-      const watch = new MutationObserver(() => {
-        if (host.classList.contains("is-hidden") || !host.isConnected) close();
-      });
-      watch.observe(host, { attributes: true, attributeFilter: ["class"] });
-      cleanups.push(() => watch.disconnect());
-    }
-    document.body.appendChild(layer);
-    setTimeout(() => {
-      if (open) layer.classList.add("y-sheet--open");
-    }, 20);
-    return { panel, close, isOpen: () => open };
-  }
 
   // source/components/Dropdown/index.js
   var _DropdownComponent = class _DropdownComponent extends BaseComponent {
@@ -1811,8 +1846,8 @@ var __yurbaui__ = (() => {
         if (e.touches.length != 1) return;
         const target = e.target instanceof Element ? e.target.closest("." + _ContextMenuComponent.TARGET) : null;
         if (!target) return;
-        const touch = e.touches[0];
-        start = { x: touch.clientX, y: touch.clientY, node: e.target };
+        const touch2 = e.touches[0];
+        start = { x: touch2.clientX, y: touch2.clientY, node: e.target };
         timer = setTimeout(() => {
           var _a, _b;
           const at = start;
@@ -1827,8 +1862,8 @@ var __yurbaui__ = (() => {
         }, HOLD);
       }, { passive: true });
       document.addEventListener("touchmove", (e) => {
-        const touch = e.touches[0];
-        if (start && touch && Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > SLOP) cancel();
+        const touch2 = e.touches[0];
+        if (start && touch2 && Math.hypot(touch2.clientX - start.x, touch2.clientY - start.y) > SLOP) cancel();
       }, { passive: true });
       document.addEventListener("touchend", (e) => {
         if (fired) e.preventDefault();
@@ -1992,13 +2027,13 @@ var __yurbaui__ = (() => {
       const mw = menu.offsetWidth;
       const mh = menu.offsetHeight;
       let left = x;
-      let top = y;
+      let top2 = y;
       if (left + mw > window.innerWidth - pad) left = x - mw;
       if (left < pad) left = pad;
-      if (top + mh > window.innerHeight - pad) top = y - mh;
-      if (top < pad) top = pad;
+      if (top2 + mh > window.innerHeight - pad) top2 = y - mh;
+      if (top2 < pad) top2 = pad;
       menu.style.left = left + "px";
-      menu.style.top = top + "px";
+      menu.style.top = top2 + "px";
     }
     isOpen() {
       return this._menu != null;
@@ -2013,12 +2048,12 @@ var __yurbaui__ = (() => {
   // source/components/Readmore/index.js
   var instances = /* @__PURE__ */ new WeakMap();
   var Readmore = class {
-    constructor(target, options = {}) {
+    constructor(target, options2 = {}) {
       this._el = typeof target == "string" ? document.querySelector(target) : target;
-      this._collapsedHeight = options.collapsedHeight ?? 200;
-      this._heightMargin = options.heightMargin ?? 16;
-      this._moreText = options.moreText ?? "Read more";
-      this._lessText = options.lessText ?? "Read less";
+      this._collapsedHeight = options2.collapsedHeight ?? 200;
+      this._heightMargin = options2.heightMargin ?? 16;
+      this._moreText = options2.moreText ?? "Read more";
+      this._lessText = options2.lessText ?? "Read less";
       this._expanded = false;
       this._toggle = null;
       this._expandTimer = null;
@@ -2243,8 +2278,8 @@ var __yurbaui__ = (() => {
       const header = _Scrollbar.sticky ? scroller.querySelector(_Scrollbar.sticky) : null;
       const style = header ? getComputedStyle(header) : null;
       const sticky = (style == null ? void 0 : style.position) == "sticky" ? (parseFloat(style.top) || 0) + header.offsetHeight : 0;
-      const offset = Math.max(sticky, this.overlayTop);
-      return { top: offset + INSET, height: scroller.clientHeight - offset - INSET * 2 };
+      const offset2 = Math.max(sticky, this.overlayTop);
+      return { top: offset2 + INSET, height: scroller.clientHeight - offset2 - INSET * 2 };
     }
     update() {
       var _a;
@@ -2256,7 +2291,8 @@ var __yurbaui__ = (() => {
       const { scrollHeight, clientHeight, scrollTop } = scroller;
       const { top: trackTop, height: trackHeight } = this.track();
       const shown = ((_a = scroller.checkVisibility) == null ? void 0 : _a.call(scroller, { visibilityProperty: true, opacityProperty: true })) ?? true;
-      if (clientHeight == 0 || !shown || scroller.closest(".is-hidden") || scrollHeight - clientHeight < MIN_OVERFLOW || trackHeight < MIN_THUMB) {
+      const scrolls = /auto|scroll|overlay/.test(getComputedStyle(scroller).overflowY);
+      if (clientHeight == 0 || !shown || !scrolls || scroller.closest(".is-hidden") || scrollHeight - clientHeight < MIN_OVERFLOW || trackHeight < MIN_THUMB) {
         thumb.hidden = true;
         return;
       }
@@ -2268,11 +2304,11 @@ var __yurbaui__ = (() => {
       const height = Math.min(trackHeight, Math.max(MIN_THUMB, trackHeight * clientHeight / scrollHeight));
       const max = scrollHeight - clientHeight;
       const progress = getComputedStyle(scroller).flexDirection == "column-reverse" ? 1 + scrollTop / max : scrollTop / max;
-      const top = rect.top + trackTop + (trackHeight - height) * Math.min(1, Math.max(0, progress));
+      const top2 = rect.top + trackTop + (trackHeight - height) * Math.min(1, Math.max(0, progress));
       thumb.hidden = false;
       thumb.style.height = `${height}px`;
       thumb.style.left = `${rect.right}px`;
-      thumb.style.transform = `translate(calc(-100% - ${INSET}px), ${top}px)`;
+      thumb.style.transform = `translate(calc(-100% - ${INSET}px), ${top2}px)`;
     }
     // Polled per frame: layout changes fire no event
     follow() {
@@ -2319,6 +2355,174 @@ var __yurbaui__ = (() => {
   __publicField(_Scrollbar, "zIndex", 1e3);
   var Scrollbar = _Scrollbar;
 
+  // source/components/PullToRefresh/index.js
+  var START = 8;
+  var READY = 72;
+  var MAX = 120;
+  var RESIST = 0.5;
+  var BACK = 200;
+  var BLOCKERS = [
+    "input",
+    "textarea",
+    "select",
+    '[contenteditable]:not([contenteditable="false"])',
+    "canvas",
+    "video",
+    "iframe",
+    '[data-y-pull="off"]',
+    ".y-win__wrapper",
+    ".y-sheet",
+    ".y-dropdown__menu",
+    ".y-context-menu",
+    ".y-tooltip"
+  ].join(", ");
+  var ICON = `<svg class="y-pull__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>`;
+  var options = null;
+  var indicator = null;
+  var touch = null;
+  var busy = false;
+  var frame = 0;
+  var top = 0;
+  function atTop(target) {
+    if (busy || !(target instanceof Element)) return false;
+    const page = document.scrollingElement ?? document.documentElement;
+    if (page.scrollTop > 0) return false;
+    for (let el = target; el && el != page && el != document.body; el = el.parentElement) {
+      if (el.scrollTop > 0) return false;
+    }
+    return true;
+  }
+  function allowed(target) {
+    if (target.closest(BLOCKERS) || options.ignore && target.closest(options.ignore)) return false;
+    if (document.documentElement.classList.contains("y-touch-hold")) return false;
+    if (options.when && !options.when()) return false;
+    if (String((getSelection == null ? void 0 : getSelection()) ?? "")) return false;
+    for (let el = target; el && el != document.body; el = el.parentElement) {
+      if (getComputedStyle(el).position == "fixed") return false;
+    }
+    return true;
+  }
+  function offset() {
+    const value = typeof options.offset == "function" ? options.offset() : options.offset;
+    return Math.max(0, Number(value) || 0);
+  }
+  function make() {
+    if (indicator == null ? void 0 : indicator.isConnected) return indicator;
+    indicator = document.createElement("div");
+    indicator.className = "y-pull";
+    indicator.setAttribute("aria-hidden", "true");
+    indicator.innerHTML = `<div class="y-pull__badge">${ICON}</div>`;
+    document.body.appendChild(indicator);
+    return indicator;
+  }
+  function paint(distance, settle = false) {
+    const el = make();
+    const badge = el.firstElementChild;
+    const shown = Math.min(MAX, distance);
+    const progress = Math.min(1, shown / READY);
+    el.classList.toggle("y-pull--back", settle);
+    el.classList.toggle("y-pull--ready", shown >= READY);
+    el.style.top = top + "px";
+    badge.style.transform = `translate3d(-50%, ${shown - 48}px, 0)`;
+    badge.style.opacity = String(Math.min(1, progress * 1.4));
+    badge.firstElementChild.style.transform = `rotate(${progress * 270}deg)`;
+  }
+  function hide() {
+    if (!indicator) return;
+    paint(0, true);
+    indicator.classList.remove("y-pull--busy");
+    setTimeout(() => {
+      if (!touch && !busy) indicator == null ? void 0 : indicator.remove();
+    }, BACK);
+  }
+  async function refresh() {
+    var _a;
+    busy = true;
+    paint(READY, true);
+    indicator.classList.add("y-pull--busy");
+    try {
+      await ((_a = options.onRefresh) == null ? void 0 : _a.call(options));
+    } catch {
+    }
+    busy = false;
+    hide();
+  }
+  function onStart(e) {
+    if (e.touches.length != 1 || !atTop(e.target)) {
+      touch = null;
+      return;
+    }
+    const point = e.touches[0];
+    touch = { x: point.clientX, y: point.clientY, target: e.target, pulling: false };
+  }
+  function onMove(e) {
+    if (!touch) return;
+    if (e.touches.length != 1) return onCancel();
+    const point = e.touches[0];
+    const dx = point.clientX - touch.x;
+    const dy = point.clientY - touch.y;
+    if (!touch.pulling) {
+      if (Math.abs(dx) < START && Math.abs(dy) < START) return;
+      if (dy <= 0 || Math.abs(dx) > dy || !allowed(touch.target)) {
+        touch = null;
+        return;
+      }
+      touch.pulling = true;
+      touch.y = point.clientY - START;
+      top = offset();
+    }
+    const distance = (point.clientY - touch.y) * RESIST;
+    if (distance <= 0) {
+      touch = null;
+      hide();
+      return;
+    }
+    touch.distance = distance;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => paint(distance));
+  }
+  function onEnd() {
+    const pulled = (touch == null ? void 0 : touch.pulling) ? touch.distance ?? 0 : 0;
+    touch = null;
+    cancelAnimationFrame(frame);
+    if (!pulled) return;
+    if (pulled >= READY) refresh();
+    else hide();
+  }
+  function onCancel() {
+    touch = null;
+    cancelAnimationFrame(frame);
+    hide();
+  }
+  var PullToRefresh = class _PullToRefresh {
+    // onRefresh may return a promise: the indicator spins until it settles. offset is where it comes from under,
+    // in px or as a function, such as the bottom of a fixed header; ignore and when keep it away from more places.
+    static enable({ onRefresh = () => location.reload(), offset: offset2 = 0, ignore = "", when = null } = {}) {
+      if (options) _PullToRefresh.disable();
+      options = { onRefresh, offset: offset2, ignore, when };
+      document.documentElement.classList.add("y-pull-enabled");
+      document.addEventListener("touchstart", onStart, { passive: true });
+      document.addEventListener("touchmove", onMove, { passive: true });
+      document.addEventListener("touchend", onEnd, { passive: true });
+      document.addEventListener("touchcancel", onCancel, { passive: true });
+    }
+    static disable() {
+      if (!options) return;
+      options = null;
+      touch = null;
+      document.documentElement.classList.remove("y-pull-enabled");
+      document.removeEventListener("touchstart", onStart);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+      document.removeEventListener("touchcancel", onCancel);
+      indicator == null ? void 0 : indicator.remove();
+      indicator = null;
+    }
+    static get enabled() {
+      return !!options;
+    }
+  };
+
   // source/index.js
   var YurbaUI = {
     Modal,
@@ -2337,7 +2541,8 @@ var __yurbaui__ = (() => {
     YurbaIcon: YurbaIconComponent,
     Group,
     Readmore,
-    Scrollbar
+    Scrollbar,
+    PullToRefresh
   };
   return __toCommonJS(index_exports);
 })();

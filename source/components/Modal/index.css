@@ -112,8 +112,7 @@ body {
     flex-shrink: 0;
     padding: var(--y-win-header-padding);
     border-bottom: 1px solid var(--y-win-divider);
-    background: var(--y-win-bg-transparent);
-    backdrop-filter: blur(10px);
+    background: var(--y-win-bg);
     z-index: 9;
     border-radius: inherit;
     border-bottom-left-radius: 0;
@@ -235,8 +234,7 @@ body {
 }
 
 .y-win__footer {
-    background: var(--y-win-bg-transparent);
-    backdrop-filter: blur(10px);
+    background: var(--y-win-bg);
     height: 100%;
     width: 100%;
     display: flex;

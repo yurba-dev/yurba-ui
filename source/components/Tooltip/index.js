@@ -1,4 +1,5 @@
 import { BaseComponent } from "../../helpers/lib.js"
+import { openSheet } from "../Dropdown/sheet.js"
 
 let tooltipId = 0
 
@@ -15,10 +16,13 @@ export class Tooltip {
             delay: properties.delay ?? 150,
             offset: properties.offset ?? 5,
             when: properties.when || null,
-            trigger: properties.trigger || "hover"
+            trigger: properties.trigger || "hover",
+            // One opened by a click is a sheet on a phone, as menus are
+            sheet: properties.sheet ?? true
         }
 
         this.tooltip = null
+        this.sheet = null
         this.showTimeout = null
         this.hideTimeout = null
         this.removeTimeout = null
@@ -74,6 +78,19 @@ export class Tooltip {
         if (!this.props.title) tooltip.classList.add("y-tooltip--plain")
         if (this.props.className) tooltip.classList.add(...this.props.className.split(" ").filter(Boolean))
 
+        tooltip.innerHTML = this.#markup()
+
+        document.body.appendChild(tooltip)
+
+        tooltip.addEventListener("mouseenter", () => this.clearHide())
+        tooltip.addEventListener("mouseleave", () => this.scheduleHide())
+
+        this.tooltip = tooltip
+        this.mounted = true
+        if (!this.target.hasAttribute("aria-describedby")) this.target.setAttribute("aria-describedby", this.id)
+    }
+
+    #markup() {
         let header = ""
 
         if (this.props.title) {
@@ -90,19 +107,37 @@ export class Tooltip {
         }
 
         const content = typeof this.props.content == "function" ? this.props.content() : this.props.content
-        tooltip.innerHTML = `
+        return `
             ${header}
             <div class="y-tooltip__content">${content}</div>
         `
+    }
 
-        document.body.appendChild(tooltip)
+    #asSheet() {
+        return this.props.trigger == "click" && this.props.sheet && window.matchMedia("(max-width: 768px)").matches
+    }
 
-        tooltip.addEventListener("mouseenter", () => this.clearHide())
-        tooltip.addEventListener("mouseleave", () => this.scheduleHide())
-
-        this.tooltip = tooltip
+    #showSheet() {
+        if (this.sheet) return
+        const box = document.createElement("div")
+        box.className = ["y-tooltip", "y-tooltip--sheet", this.props.className].filter(Boolean).join(" ")
+        box.innerHTML = this.#markup()
+        const sheet = openSheet([], {
+            trigger: this.target,
+            onClose: () => {
+                if (this.sheet != sheet) return
+                this.sheet = null
+                this.tooltip = null
+                this.mounted = false
+                this.visible = false
+            },
+        })
+        sheet.panel.setAttribute("role", "dialog")
+        sheet.panel.appendChild(box)
+        this.sheet = sheet
+        this.tooltip = box
         this.mounted = true
-        if (!this.target.hasAttribute("aria-describedby")) this.target.setAttribute("aria-describedby", this.id)
+        this.visible = true
     }
 
     scheduleShow() {
@@ -134,6 +169,7 @@ export class Tooltip {
 
     show() {
         if (!this.target.isConnected) return this.hide()
+        if (this.#asSheet()) return this.#showSheet()
         clearTimeout(this.removeTimeout)
         this.createTooltip()
         this.#listen(true)
@@ -159,7 +195,7 @@ export class Tooltip {
         if (title) title.innerHTML = this.props.title
         const icon = this.tooltip.querySelector(".y-tooltip__icon")
         if (icon && this.props.icon) icon.innerHTML = this.props.icon
-        if (this.visible) this.#place()
+        if (this.visible && !this.sheet) this.#place()
     }
 
     #place() {
@@ -210,6 +246,7 @@ export class Tooltip {
     hide() {
         this.clearShow()
         this.visible = false
+        if (this.sheet) return this.sheet.close()
         if (!this.tooltip) return
         this.#listen(false)
         this.tooltip.classList.add("is-hidden")
@@ -235,6 +272,7 @@ export class Tooltip {
         this.target.removeEventListener("pointerleave", this._onHide)
         this.target.removeEventListener("focusin", this._onFocus)
         this.target.removeEventListener("focusout", this._onHide)
+        this.sheet?.close()
         if (this.tooltip) this.tooltip.classList.add("is-hidden")
         this.#unmount()
     }

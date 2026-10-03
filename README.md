@@ -36,6 +36,7 @@ Output goes to `dist/`: `yurba-ui.js`, `yurba-ui.min.js`, `yurba-ui.css`, `yurba
 | `YurbaUI.ContextMenu` | Right-click menu opened at the cursor (same item model as Dropdown) |
 | `YurbaUI.Readmore` | Expandable text block with "Read more / Less" toggles |
 | `YurbaUI.Scrollbar` | Overlay scrollbar thumb that replaces the native one |
+| `YurbaUI.PullToRefresh` | Pull down from the top to refresh, for apps and installed sites with no browser pull of their own |
 | `YurbaUI.Group` | Component group |
 | `YurbaUI.Title` | Title component |
 | `YurbaUI.Description` | Subtitle component |
@@ -147,5 +148,20 @@ YurbaUI.Scrollbar.sticky = '[data-y-scrollbar-sticky]'
 ```
 
 Scrollbar tokens: `--y-scrollbar-color`, `--y-scrollbar-radius`, `--y-scrollbar-width`, `--y-scrollbar-width-hover`, `--y-scrollbar-opacity`, `--y-scrollbar-opacity-hover`.
+
+```js
+// Only where the browser has no pull of its own, such as an app's WebView or an installed site
+YurbaUI.PullToRefresh.enable({
+    onRefresh: () => location.reload(),          // may return a promise; the indicator spins until it settles
+    offset: () => header.getBoundingClientRect().bottom, // where the indicator comes out from, px
+    ignore: '.chat',                            // more places that never start a pull
+    when: () => !player.fullscreen,             // more conditions, checked as a pull starts
+})
+YurbaUI.PullToRefresh.disable()
+```
+
+A pull starts only from the very top of the page and of every list the finger is in, straight down, and never in
+a field, a canvas or video, a modal, a sheet, a menu, anything fixed over the page or `[data-y-pull="off"]`.
+The listeners are passive and only the indicator moves. Tokens: `--y-pull-zindex`.
 
 See [demo](https://yurba-dev.github.io/yurba-ui/) for full documentation.

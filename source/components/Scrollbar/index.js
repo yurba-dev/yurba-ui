@@ -203,7 +203,9 @@ export class Scrollbar {
         const { scrollHeight, clientHeight, scrollTop } = scroller
         const { top: trackTop, height: trackHeight } = this.track()
         const shown = scroller.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) ?? true
-        if (clientHeight == 0 || !shown || scroller.closest(".is-hidden") || scrollHeight - clientHeight < MIN_OVERFLOW || trackHeight < MIN_THUMB) {
+        // A box that doesn't scroll has no bar, whatever pokes out of it: a menu's hidden submenu beside it, say
+        const scrolls = /auto|scroll|overlay/.test(getComputedStyle(scroller).overflowY)
+        if (clientHeight == 0 || !shown || !scrolls || scroller.closest(".is-hidden") || scrollHeight - clientHeight < MIN_OVERFLOW || trackHeight < MIN_THUMB) {
             thumb.hidden = true
             return
         }

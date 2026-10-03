@@ -1,0 +1,66 @@
+/* Pull to refresh */
+
+/* The pull is shown by the indicator, not by the page stretching or glowing at its top */
+html.y-pull-enabled,
+html.y-pull-enabled body {
+    overscroll-behavior-y: none;
+}
+
+/* A frame from the top bar's bottom edge down, cutting off whatever of the badge is still above it */
+.y-pull {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--y-pull-zindex, 1000);
+    height: 180px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.y-pull__badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--y-win-bg);
+    color: var(--y-win-text);
+    box-shadow: var(--y-win-shadow-menu);
+    opacity: 0;
+    transform: translate3d(-50%, -48px, 0);
+    will-change: transform, opacity;
+}
+
+.y-pull--back .y-pull__badge {
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.y-pull--ready .y-pull__badge {
+    color: var(--y-win-accent);
+}
+
+.y-pull__icon {
+    width: 22px;
+    height: 22px;
+}
+
+.y-pull--busy .y-pull__icon {
+    animation: y-pull-spin .8s linear infinite;
+}
+
+@keyframes y-pull-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .y-pull--busy .y-pull__icon {
+        animation-duration: 2s;
+    }
+}
